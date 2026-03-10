@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Req, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Public } from './decorators/public.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Auth')
@@ -20,6 +21,7 @@ export class AuthController {
 
   @Get('me')
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Obtener el perfil del usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil devuelto exitosamente' })
   getProfile(@Request() req: any) {
