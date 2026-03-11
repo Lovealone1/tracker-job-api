@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JobApplicationsController } from './job-applications.controller';
 import { JobApplicationsService } from './job-applications.service';
 import { JobApplicationStatus, Role } from '@prisma/client';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 
 describe('JobApplicationsController', () => {
   let controller: JobApplicationsController;
@@ -38,9 +38,9 @@ describe('JobApplicationsController', () => {
         { provide: JobApplicationsService, useValue: mockService },
       ],
     })
-    .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn().mockReturnValue(true) })
-    .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn().mockReturnValue(true) })
-    .compile();
+      .overrideGuard(JwtAuthGuard).useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .overrideGuard(RolesGuard).useValue({ canActivate: jest.fn().mockReturnValue(true) })
+      .compile();
 
     controller = module.get<JobApplicationsController>(JobApplicationsController);
     service = module.get<JobApplicationsService>(JobApplicationsService);
