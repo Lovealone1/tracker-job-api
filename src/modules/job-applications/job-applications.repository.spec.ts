@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobApplicationsRepository } from './job-applications.repository';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { JobApplication, JobApplicationStatus, Priority, Role, WorkMode } from '@prisma/client';
 
 describe('JobApplicationsRepository', () => {

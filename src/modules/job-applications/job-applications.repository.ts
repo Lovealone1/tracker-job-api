@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, JobApplication, Role } from '@prisma/client';
-import { UserPayload } from '../auth/decorators/current-user.decorator';
+import { UserPayload } from '../../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class JobApplicationsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private getBaseWhere(user: UserPayload): Prisma.JobApplicationWhereInput {
     // Data Scoping: If not ADMIN, user can only see their own records
@@ -41,14 +41,14 @@ export class JobApplicationsRepository {
 
   async update(user: UserPayload, id: string, data: Prisma.JobApplicationUpdateInput): Promise<JobApplication | null> {
     const baseWhere = this.getBaseWhere(user);
-    
+
     // Verify existence and ownership
     const existing = await this.prisma.jobApplication.findFirst({
-        where: { id, ...baseWhere }
+      where: { id, ...baseWhere }
     });
-    
+
     if (!existing) {
-        return null;
+      return null;
     }
 
     return this.prisma.jobApplication.update({
@@ -59,13 +59,13 @@ export class JobApplicationsRepository {
 
   async delete(user: UserPayload, id: string): Promise<boolean> {
     const baseWhere = this.getBaseWhere(user);
-    
+
     const existing = await this.prisma.jobApplication.findFirst({
-        where: { id, ...baseWhere }
+      where: { id, ...baseWhere }
     });
-    
+
     if (!existing) {
-        return false;
+      return false;
     }
 
     await this.prisma.jobApplication.delete({
@@ -102,10 +102,10 @@ export class JobApplicationsRepository {
 
     // Date metrics
     const now = new Date();
-    
+
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
+
     const oneMonthAgo = new Date(now);
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 

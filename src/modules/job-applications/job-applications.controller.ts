@@ -7,11 +7,11 @@ import { UpdateJobApplicationStatusDto } from './dto/update-job-application-stat
 import { UpdateJobApplicationNotesDto } from './dto/update-job-application-notes.dto';
 import { UpdateJobApplicationPriorityDto } from './dto/update-job-application-priority.dto';
 import { UpdateJobApplicationResumeVariantDto } from './dto/update-job-application-resume-variant.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import type { UserPayload } from '../auth/decorators/current-user.decorator';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import type { UserPayload } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { JobApplicationResponseDto } from './dto/job-application-response.dto';
 import { JobApplicationSummaryResponseDto } from './dto/job-application-summary-response.dto';
@@ -22,7 +22,7 @@ import { plainToInstance } from 'class-transformer';
 @Controller('job-applications')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class JobApplicationsController {
-  constructor(private readonly jobApplicationsService: JobApplicationsService) {}
+  constructor(private readonly jobApplicationsService: JobApplicationsService) { }
 
   @Post()
   @Roles(Role.USER, Role.ADMIN)

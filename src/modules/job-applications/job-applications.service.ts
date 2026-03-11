@@ -6,11 +6,11 @@ import { UpdateJobApplicationNotesDto } from './dto/update-job-application-notes
 import { UpdateJobApplicationPriorityDto } from './dto/update-job-application-priority.dto';
 import { UpdateJobApplicationResumeVariantDto } from './dto/update-job-application-resume-variant.dto';
 import { JobApplicationsRepository } from './job-applications.repository';
-import { UserPayload } from '../auth/decorators/current-user.decorator';
+import { UserPayload } from '../../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class JobApplicationsService {
-  constructor(private readonly jobApplicationsRepository: JobApplicationsRepository) {}
+  constructor(private readonly jobApplicationsRepository: JobApplicationsRepository) { }
 
   async create(user: UserPayload, createDto: CreateJobApplicationDto) {
     return this.jobApplicationsRepository.create(user, createDto as any);
@@ -61,8 +61,8 @@ export class JobApplicationsService {
   }
 
   async updateResumeVariant(user: UserPayload, id: string, updateResumeVariantDto: UpdateJobApplicationResumeVariantDto) {
-    const updated = await this.jobApplicationsRepository.update(user, id, { 
-      resumeVariant: { connect: { id: updateResumeVariantDto.resumeVariantId } } 
+    const updated = await this.jobApplicationsRepository.update(user, id, {
+      resumeVariant: { connect: { id: updateResumeVariantDto.resumeVariantId } }
     });
     if (!updated) {
       throw new NotFoundException(`Job application with ID ${id} not found`);
