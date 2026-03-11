@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateJobApplicationDto } from './dto/create-job-application.dto';
 import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
 import { UpdateJobApplicationStatusDto } from './dto/update-job-application-status.dto';
@@ -7,12 +7,20 @@ import { UpdateJobApplicationPriorityDto } from './dto/update-job-application-pr
 import { UpdateJobApplicationResumeVariantDto } from './dto/update-job-application-resume-variant.dto';
 import { JobApplicationsRepository } from './job-applications.repository';
 import { UserPayload } from '../../auth/decorators/current-user.decorator';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class JobApplicationsService {
-  constructor(private readonly jobApplicationsRepository: JobApplicationsRepository) { }
+  constructor(
+    private readonly jobApplicationsRepository: JobApplicationsRepository,
+    private readonly prisma: PrismaService,
+  ) { }
 
   async create(user: UserPayload, createDto: CreateJobApplicationDto) {
+    // Validar ownership del resumeVariantId si viene en el body
+    if (createDto.resumeVariantId) {
+      await this.assertResumeVariantOwnership(user.sub, createDto.resumeVariantId);
+    }
     return this.jobApplicationsRepository.create(user, createDto as any);
   }
 
@@ -61,6 +69,9 @@ export class JobApplicationsService {
   }
 
   async updateResumeVariant(user: UserPayload, id: string, updateResumeVariantDto: UpdateJobApplicationResumeVariantDto) {
+    // Validar ownership del resumeVariantId antes de vincular
+    await this.assertResumeVariantOwnership(user.sub, updateResumeVariantDto.resumeVariantId);
+
     const updated = await this.jobApplicationsRepository.update(user, id, {
       resumeVariant: { connect: { id: updateResumeVariantDto.resumeVariantId } }
     });
@@ -68,6 +79,17 @@ export class JobApplicationsService {
       throw new NotFoundException(`Job application with ID ${id} not found`);
     }
     return updated;
+  }
+
+  // ── Ownership helpers ──────────────────────────────────────────────────
+
+  private async assertResumeVariantOwnership(userId: string, resumeVariantId: string): Promise<void> {
+    const variant = await this.prisma.resumeVariant.findFirst({
+      where: { id: resumeVariantId, profileId: userId },
+    });
+    if (!variant) {
+      throw new NotFoundException(`Resume Variant ID ${resumeVariantId} not found or inaccessible.`);
+    }
   }
 
   async remove(user: UserPayload, id: string) {
