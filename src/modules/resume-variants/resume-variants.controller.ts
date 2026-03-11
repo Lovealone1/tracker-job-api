@@ -18,6 +18,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { ResumeVariantResponseDto } from './dto/resume-variant-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Resume Variants')
 @ApiBearerAuth()
@@ -26,6 +27,7 @@ import { ResumeVariantResponseDto } from './dto/resume-variant-response.dto';
 export class ResumeVariantsController {
   constructor(private readonly resumeVariantsService: ResumeVariantsService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post()
   @ApiOperation({ summary: 'Create a new resume variant for a specific job application' })
   @ApiResponse({
@@ -66,6 +68,7 @@ export class ResumeVariantsController {
     return plainToInstance(ResumeVariantResponseDto, variant);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id')
   @ApiOperation({ summary: 'Update specific fields of a resume variant (e.g. ATS score, AI edits)' })
   @ApiResponse({
@@ -83,6 +86,7 @@ export class ResumeVariantsController {
     return plainToInstance(ResumeVariantResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a variant (JobApplication link will be set to Null)' })
   @ApiResponse({

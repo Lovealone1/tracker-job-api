@@ -1,9 +1,12 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, OmitType } from '@nestjs/swagger';
 import { CreateReminderDto } from './create-reminder.dto';
 import { IsEnum, IsNotEmpty, IsDateString } from 'class-validator';
 import { ReminderStatus, ReminderType } from '@prisma/client';
 
-export class UpdateReminderDto extends PartialType(CreateReminderDto) {}
+// Excluir FKs para prevenir reasignación de relaciones de otro usuario (IDOR fix)
+export class UpdateReminderDto extends PartialType(
+  OmitType(CreateReminderDto, ['jobApplicationId', 'interviewId'] as const)
+) {}
 
 export class UpdateReminderStatusDto {
   @ApiProperty({

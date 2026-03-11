@@ -16,6 +16,7 @@ import { Role } from '@prisma/client';
 import { JobApplicationResponseDto } from './dto/job-application-response.dto';
 import { JobApplicationSummaryResponseDto } from './dto/job-application-summary-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Job Applications')
 @ApiBearerAuth()
@@ -24,6 +25,7 @@ import { plainToInstance } from 'class-transformer';
 export class JobApplicationsController {
   constructor(private readonly jobApplicationsService: JobApplicationsService) { }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Post()
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Create a new job application' })
@@ -61,6 +63,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Update a job application' })
@@ -75,6 +78,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // Heavy operation throttle limit
   @Patch(':id/status')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Update the status of a job application' })
@@ -89,6 +93,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/notes')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Update the notes of a job application' })
@@ -103,6 +108,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Patch(':id/priority')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Update the priority of a job application' })
@@ -117,6 +123,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Patch(':id/resume-variant')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Update the resume variant used for a job application' })
@@ -131,6 +138,7 @@ export class JobApplicationsController {
     return plainToInstance(JobApplicationResponseDto, application);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Delete(':id')
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Delete a job application' })

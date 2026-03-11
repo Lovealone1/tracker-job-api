@@ -1,10 +1,12 @@
-import { PartialType, ApiProperty } from '@nestjs/swagger';
+import { PartialType, ApiProperty, OmitType } from '@nestjs/swagger';
 import { CreateInterviewDto } from './create-interview.dto';
 import { IsEnum, IsString, IsNotEmpty, IsDateString, IsInt, Min, IsOptional } from 'class-validator';
 import { InterviewStatus } from '@prisma/client';
 
-// General update ignores jobApplicationId
-export class UpdateInterviewDto extends PartialType(CreateInterviewDto) {}
+// Excluir jobApplicationId para prevenir reasignación de FK (IDOR fix)
+export class UpdateInterviewDto extends PartialType(
+  OmitType(CreateInterviewDto, ['jobApplicationId'] as const)
+) {}
 
 // Specific DTO for /status endpoint
 export class UpdateInterviewStatusDto {
