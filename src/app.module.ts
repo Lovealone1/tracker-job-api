@@ -8,6 +8,7 @@ import { ResumesModule } from './modules/resumes/resumes.module';
 import { ResumeVariantsModule } from './modules/resume-variants/resume-variants.module';
 import { MailModule } from './modules/mail/mail.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RemindersModule } from './modules/reminders/reminders.module';
     ResumeVariantsModule,
     MailModule,
     RemindersModule,
+    UsersModule,
   ],
 
 })
