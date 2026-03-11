@@ -5,6 +5,7 @@ import { JobApplicationsModule } from './modules/job-applications/job-applicatio
 import { InterviewsModule } from './modules/interviews/interviews.module';
 import { ResumesModule } from './modules/resumes/resumes.module';
 import { ResumeVariantsModule } from './modules/resume-variants/resume-variants.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ResumeVariantsModule } from './modules/resume-variants/resume-variants.
     InterviewsModule,
     ResumesModule,
     ResumeVariantsModule,
+    MailModule,
   ],
 
 })
