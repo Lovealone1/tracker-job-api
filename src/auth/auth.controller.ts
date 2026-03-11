@@ -12,9 +12,9 @@ export class AuthController {
 
   @Public()
   @Post('token')
-  @ApiOperation({ summary: 'Login con email/password hacia Supabase' })
-  @ApiResponse({ status: 200, description: 'Token JWT obtenido correctamente' })
-  @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
+  @ApiOperation({ summary: 'Login with email/password via Supabase' })
+  @ApiResponse({ status: 200, description: 'JWT Token successfully obtained' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
@@ -22,8 +22,8 @@ export class AuthController {
   @Get('me')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Obtener el perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil devuelto exitosamente' })
+  @ApiOperation({ summary: 'Get the authenticated user profile' })
+  @ApiResponse({ status: 200, description: 'Profile returned successfully' })
   getProfile(@Request() req: any) {
     // req.user has { sub, email, role } decoded from the JWT by JwtStrategy
     return this.authService.getProfile(req.user.sub);
