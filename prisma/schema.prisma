@@ -107,24 +107,24 @@ enum ReminderStatus {
 // -----------------------------------------------------------------------------
 
 model Profile {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  role            Role      @default(USER)
-  enabled         Boolean   @default(true)
-  document        String?
-  firstName       String?
-  lastName        String?
-  
+  id        String  @id @default(uuid())
+  email     String  @unique
+  role      Role    @default(USER)
+  enabled   Boolean @default(true)
+  document  String?
+  firstName String?
+  lastName  String?
+
   // Opcionales
-  country         String?
-  phone           String?
-  avatarUrl       String?
-  timezone        String?
-  language        String?
-  lastLoginAt     DateTime?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  country     String?
+  phone       String?
+  avatarUrl   String?
+  timezone    String?
+  language    String?
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
   resumes         Resume[]
@@ -137,90 +137,110 @@ model Profile {
 }
 
 model Resume {
-  id           String    @id @default(uuid())
-  profileId    String
-  title        String
-  slug         String?
-  summary      String?   @db.Text
-  content      Json?
-  template     String?
-  isDefault    Boolean   @default(false)
-  
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id        String  @id @default(uuid())
+  profileId String
+  title     String
+  slug      String?
+  template  String?
+  isDefault Boolean @default(false)
 
-  profile      Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  variants     ResumeVariant[]
+  // Estructura Base del CV
+  resumeName   String
+  personalInfo Json
+  summary      String? @db.Text
+  education    Json
+  experience   Json
+  projects     Json?
+  skills       Json?
+  others       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile  Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  variants ResumeVariant[]
 
   @@index([profileId])
 }
 
 model ResumeVariant {
-  id       String @id @default(uuid())
-  resumeId         String
-  profileId        String
-  
-  title            String
-  content          Json?
-  notes            String?   @db.Text
-  generatedWithAI  Boolean   @default(false)
-  atsScore         Float?
-  matchScore       Float?    
-  pdfUrl           String?
-  
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id        String @id @default(uuid())
+  resumeId  String
+  profileId String
 
-  profile          Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  resume           Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  
-  jobApplications  JobApplication[]
+  title String
+
+  // Copia de la Estructura Base del CV (Modificable)
+  resumeName   String
+  personalInfo Json
+  summary      String? @db.Text
+  education    Json
+  experience   Json
+  projects     Json?
+  skills       Json?
+  others       Json?
+
+  // Novedades para Variante
+  modifications   Json? // Log de las modificaciones hechas por IA (ej. en experience)
+  notes           String? @db.Text
+  generatedWithAI Boolean @default(false)
+  atsScore        Float?
+  matchScore      Float?
+  pdfUrl          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resume  Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  jobApplications JobApplication[]
 
   @@index([profileId])
   @@index([resumeId])
 }
 
 model JobApplication {
-  id                    String    @id @default(uuid())
-  profileId             String
-  resumeVariantId       String?
-  
+  id              String  @id @default(uuid())
+  profileId       String
+  resumeVariantId String?
+
   // Datos del trabajo
-  title                 String
-  company               String
-  description           String?   @db.Text
-  jobUrl                String?
-  source                String?
-  location              String?
-  country               String?
-  workMode              WorkMode  @default(REMOTE)
-  employmentType        EmploymentType?
-  contractType          ContractType?
-  seniorityLevel        String?
-  
+  title          String
+  company        String
+  description    String?         @db.Text
+  jobUrl         String?
+  source         String?
+  location       String?
+  country        String?
+  workMode       WorkMode        @default(REMOTE)
+  employmentType EmploymentType?
+  contractType   ContractType?
+  seniorityLevel String?
+
   // Compensación y Beneficios
   compensationAmountMin Float?
   compensationAmountMax Float?
   compensationType      CompensationType?
   currency              String?
-  benefits              String?   @db.Text
-  
-  // Estado y seguimiento
-  status                JobApplicationStatus @default(SAVED)
-  priority              Priority? @default(MEDIUM)
-  
-  appliedAt             DateTime?
-  savedAt               DateTime? @default(now())
-  closedAt              DateTime? // Cuando se cerró/rechazó/archivó
-  notes                 String?   @db.Text
-  
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  benefits              String?           @db.Text
 
-  profile               Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  resumeVariant         ResumeVariant?   @relation(fields: [resumeVariantId], references: [id], onDelete: SetNull)
-  interviews            Interview[]
-  reminders             Reminder[]
+  // Estado y seguimiento
+  status   JobApplicationStatus @default(SAVED)
+  priority Priority?            @default(MEDIUM)
+
+  appliedAt DateTime?
+  savedAt   DateTime? @default(now())
+  closedAt  DateTime? // Cuando se cerró/rechazó/archivó
+  notes     String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  resumeVariant ResumeVariant? @relation(fields: [resumeVariantId], references: [id], onDelete: SetNull)
+  interviews    Interview[]
+  reminders     Reminder[]
 
   @@index([profileId])
   @@index([status])
@@ -228,32 +248,32 @@ model JobApplication {
 }
 
 model Interview {
-  id               String    @id @default(uuid())
+  id               String @id @default(uuid())
   profileId        String
   jobApplicationId String
-  
-  type             InterviewType
-  status           InterviewStatus @default(SCHEDULED)
-  scheduledAt      DateTime
-  durationMinutes  Int?
-  timezone         String?
-  location         String?   // Presencial
-  meetingUrl       String?   // Remoto (Zoom, Meet)
-  
+
+  type            InterviewType
+  status          InterviewStatus @default(SCHEDULED)
+  scheduledAt     DateTime
+  durationMinutes Int?
+  timezone        String?
+  location        String? // Presencial
+  meetingUrl      String? // Remoto (Zoom, Meet)
+
   interviewerName  String?
   interviewerEmail String?
-  
-  notes            String?   @db.Text
-  feedback         String?   @db.Text
-  
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+
+  notes    String? @db.Text
+  feedback String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  profile          Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  jobApplication   JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  
-  reminders        Reminder[]
+  profile        Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  jobApplication JobApplication @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+
+  reminders Reminder[]
 
   @@index([profileId])
   @@index([jobApplicationId])
@@ -261,27 +281,27 @@ model Interview {
 }
 
 model Reminder {
-  id               String    @id @default(uuid())
+  id               String  @id @default(uuid())
   profileId        String
   jobApplicationId String?
   interviewId      String?
-  
-  title            String
-  description      String?   @db.Text
-  type             ReminderType
-  status           ReminderStatus @default(PENDING)
-  
-  dueAt            DateTime
-  completedAt      DateTime?
-  isRecurring      Boolean   @default(false)
-  
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+
+  title       String
+  description String?        @db.Text
+  type        ReminderType
+  status      ReminderStatus @default(PENDING)
+
+  dueAt       DateTime
+  completedAt DateTime?
+  isRecurring Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  profile          Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  jobApplication   JobApplication? @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
-  interview        Interview?     @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  profile        Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  jobApplication JobApplication? @relation(fields: [jobApplicationId], references: [id], onDelete: Cascade)
+  interview      Interview?      @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 
   @@index([profileId])
   @@index([dueAt]) // Útil para traer recordatorios próximos
