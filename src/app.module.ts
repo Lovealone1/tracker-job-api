@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
@@ -9,14 +9,20 @@ import { ResumeVariantsModule } from './modules/resume-variants/resume-variants.
 import { MailModule } from './modules/mail/mail.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { UsersModule } from './modules/users/users.module';
+import { LoggerModule } from './common/logger/logger.module';
 
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { HttpLoggingInterceptor } from './common/interceptors/http-logging.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    LoggerModule,
     AuthModule,
     JobApplicationsModule,
     InterviewsModule,
@@ -43,6 +49,20 @@ import { APP_GUARD } from '@nestjs/core';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpLoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // CorrelationIdMiddleware runs before guards/interceptors on all routes
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}
+
