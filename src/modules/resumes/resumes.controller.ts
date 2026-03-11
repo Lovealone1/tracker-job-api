@@ -24,6 +24,7 @@ import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { ResumeSummaryResponseDto } from './dto/resume-summary-response.dto';
 import { ResumeDetailResponseDto } from './dto/resume-detail-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Resumes')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ import { ResumeDetailResponseDto } from './dto/resume-detail-response.dto';
 export class ResumesController {
   constructor(private readonly resumesService: ResumesService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Post()
   @ApiOperation({ summary: 'Create a new base resume' })
   @ApiResponse({
@@ -72,6 +74,7 @@ export class ResumesController {
     return plainToInstance(ResumeDetailResponseDto, resume);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id')
   @ApiOperation({ summary: 'Update an existing resume' })
   @ApiResponse({
@@ -93,6 +96,7 @@ export class ResumesController {
     return plainToInstance(ResumeDetailResponseDto, updatedResume);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/default')
   @ApiOperation({ summary: 'Set a specific resume as the default' })
   @ApiResponse({
@@ -109,6 +113,7 @@ export class ResumesController {
     return plainToInstance(ResumeSummaryResponseDto, updatedResume);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a resume' })
   @ApiResponse({

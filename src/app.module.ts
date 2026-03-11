@@ -10,6 +10,9 @@ import { MailModule } from './modules/mail/mail.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { UsersModule } from './modules/users/users.module';
 
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -22,7 +25,24 @@ import { UsersModule } from './modules/users/users.module';
     MailModule,
     RemindersModule,
     UsersModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 10000,
+        limit: 50,
+      },
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 10,
+      },
+    ]),
   ],
-
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }

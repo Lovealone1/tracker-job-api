@@ -27,6 +27,7 @@ import {
   ReminderDetailResponseDto,
   ReminderDashboardSummaryDto,
 } from './dto/reminder-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Reminders')
 @ApiBearerAuth()
@@ -35,6 +36,7 @@ import {
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Post()
   @ApiOperation({ summary: 'Create a new reminder' })
   @ApiResponse({
@@ -125,6 +127,7 @@ export class RemindersController {
     return plainToInstance(ReminderDetailResponseDto, reminder);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id')
   @ApiOperation({ summary: 'Update a reminder generically' })
   @ApiResponse({
@@ -142,6 +145,7 @@ export class RemindersController {
     return plainToInstance(ReminderDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update reminder status explicitly' })
   @ApiResponse({ type: ReminderSummaryResponseDto })
@@ -150,6 +154,7 @@ export class RemindersController {
     return plainToInstance(ReminderSummaryResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/type')
   @ApiOperation({ summary: 'Update reminder type explicitly' })
   @ApiResponse({ type: ReminderDetailResponseDto })
@@ -158,6 +163,7 @@ export class RemindersController {
     return plainToInstance(ReminderDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/reschedule')
   @ApiOperation({ summary: 'Reschedule reminder date/time exclusively' })
   @ApiResponse({ type: ReminderSummaryResponseDto })
@@ -166,6 +172,7 @@ export class RemindersController {
     return plainToInstance(ReminderSummaryResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a reminder' })
   @ApiResponse({

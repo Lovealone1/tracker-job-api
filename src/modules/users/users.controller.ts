@@ -17,6 +17,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { UserSummaryResponseDto, UserDetailResponseDto } from './dto/user-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Admin Users')
 @ApiBearerAuth()
@@ -48,6 +49,7 @@ export class UsersController {
     return plainToInstance(UserDetailResponseDto, user);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } }) // 20 requests per 10 seconds (standard write limit)
   @Patch(':id')
   @ApiOperation({ summary: 'Update basic user data (Roles, enabled state, etc)' })
   @ApiResponse({
@@ -62,6 +64,7 @@ export class UsersController {
     return plainToInstance(UserDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per 60 seconds (heavy admin action)
   @Post(':id/suspend')
   @ApiOperation({ summary: 'Suspend/Ban a user via Supabase Auth' })
   @ApiResponse({ status: 200, description: 'User successfully suspended' })
@@ -69,6 +72,7 @@ export class UsersController {
     return this.usersService.suspendUserInSupabase(id, dto);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per 60 seconds (heavy admin action)
   @Post(':id/unban')
   @ApiOperation({ summary: 'Remove a suspension/ban from a user in Supabase Auth' })
   @ApiResponse({ status: 200, description: 'User successfully unbanned' })
@@ -76,6 +80,7 @@ export class UsersController {
     return this.usersService.unbanUserInSupabase(id);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per 60 seconds (heavy destruction action)
   @Delete(':id')
   @ApiOperation({ summary: 'Hard delete a user from the platform entirely' })
   @ApiResponse({

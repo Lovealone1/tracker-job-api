@@ -24,6 +24,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { InterviewSummaryResponseDto, InterviewDetailResponseDto } from './dto/interview-response.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Interviews')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ import { InterviewSummaryResponseDto, InterviewDetailResponseDto } from './dto/i
 export class InterviewsController {
   constructor(private readonly interviewsService: InterviewsService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Post()
   @ApiOperation({ summary: 'Create a new interview for a job application' })
   @ApiResponse({
@@ -96,6 +98,7 @@ export class InterviewsController {
     return plainToInstance(InterviewDetailResponseDto, interview);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id')
   @ApiOperation({ summary: 'Update an interview generically' })
   @ApiResponse({
@@ -113,6 +116,7 @@ export class InterviewsController {
     return plainToInstance(InterviewDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update interview status explicitly' })
   @ApiResponse({ type: InterviewSummaryResponseDto })
@@ -121,6 +125,7 @@ export class InterviewsController {
     return plainToInstance(InterviewSummaryResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/notes')
   @ApiOperation({ summary: 'Update interview preparation notes explicitly' })
   @ApiResponse({ type: InterviewDetailResponseDto })
@@ -129,6 +134,7 @@ export class InterviewsController {
     return plainToInstance(InterviewDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Patch(':id/feedback')
   @ApiOperation({ summary: 'Update interview feedback explicitly' })
   @ApiResponse({ type: InterviewDetailResponseDto })
@@ -137,6 +143,7 @@ export class InterviewsController {
     return plainToInstance(InterviewDetailResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Patch(':id/reschedule')
   @ApiOperation({ summary: 'Reschedule interview date/time exclusively' })
   @ApiResponse({ type: InterviewSummaryResponseDto })
@@ -145,6 +152,7 @@ export class InterviewsController {
     return plainToInstance(InterviewSummaryResponseDto, updated);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an interview' })
   @ApiResponse({
