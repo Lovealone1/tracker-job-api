@@ -14,6 +14,7 @@ import type { UserPayload } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { JobApplicationResponseDto } from './dto/job-application-response.dto';
+import { JobApplicationSummaryResponseDto } from './dto/job-application-summary-response.dto';
 import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Job Applications')
@@ -39,6 +40,15 @@ export class JobApplicationsController {
   async findAll(@CurrentUser() user: UserPayload): Promise<JobApplicationResponseDto[]> {
     const applications = await this.jobApplicationsService.findAll(user);
     return applications.map(app => plainToInstance(JobApplicationResponseDto, app));
+  }
+
+  @Get('summary')
+  @Roles(Role.USER, Role.ADMIN)
+  @ApiOperation({ summary: 'Get aggregated summary and metrics for the current user job applications' })
+  @ApiResponse({ status: 200, description: 'Returns the dashboard summary.', type: JobApplicationSummaryResponseDto })
+  async getSummary(@CurrentUser() user: UserPayload): Promise<JobApplicationSummaryResponseDto> {
+    const summary = await this.jobApplicationsService.getSummary(user);
+    return plainToInstance(JobApplicationSummaryResponseDto, summary);
   }
 
   @Get(':id')

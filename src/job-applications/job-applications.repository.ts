@@ -73,4 +73,78 @@ export class JobApplicationsRepository {
     });
     return true;
   }
+
+  async getSummary(user: UserPayload) {
+    const baseWhere = this.getBaseWhere(user);
+
+    // Get total count
+    const totalApplications = await this.prisma.jobApplication.count({
+      where: baseWhere,
+    });
+
+    // Get status breakdown
+    const statusGroups = await this.prisma.jobApplication.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: {
+        status: true,
+      },
+    });
+
+    // Get work mode breakdown
+    const workModeGroups = await this.prisma.jobApplication.groupBy({
+      by: ['workMode'],
+      where: baseWhere,
+      _count: {
+        workMode: true,
+      },
+    });
+
+    // Date metrics
+    const now = new Date();
+    
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const oneMonthAgo = new Date(now);
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const appliedThisWeek = await this.prisma.jobApplication.count({
+      where: {
+        ...baseWhere,
+        appliedAt: {
+          gte: oneWeekAgo,
+        },
+      },
+    });
+
+    const appliedThisMonth = await this.prisma.jobApplication.count({
+      where: {
+        ...baseWhere,
+        appliedAt: {
+          gte: oneMonthAgo,
+        },
+      },
+    });
+
+    // Interview metrics
+    const upcomingInterviewsCount = await this.prisma.interview.count({
+      where: {
+        profileId: user.sub,
+        status: 'SCHEDULED',
+        scheduledAt: {
+          gt: now,
+        },
+      },
+    });
+
+    return {
+      totalApplications,
+      statusGroups,
+      workModeGroups,
+      appliedThisWeek,
+      appliedThisMonth,
+      upcomingInterviewsCount,
+    };
+  }
 }

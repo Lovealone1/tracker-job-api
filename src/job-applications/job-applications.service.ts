@@ -77,4 +77,42 @@ export class JobApplicationsService {
     }
     return { success: true };
   }
+
+  async getSummary(user: UserPayload) {
+    const rawSummary = await this.jobApplicationsRepository.getSummary(user);
+
+    // Initialize all counts to 0
+    const byStatus = {
+      SAVED: 0,
+      APPLIED: 0,
+      INTERVIEWING: 0,
+      OFFER_RECEIVED: 0,
+      REJECTED: 0,
+      WITHDRAWN: 0,
+      GHOSTED: 0,
+    };
+
+    rawSummary.statusGroups.forEach((group: any) => {
+      byStatus[group.status] = group._count.status;
+    });
+
+    const byWorkMode = {
+      REMOTE: 0,
+      HYBRID: 0,
+      ON_SITE: 0,
+    };
+
+    rawSummary.workModeGroups.forEach((group: any) => {
+      byWorkMode[group.workMode] = group._count.workMode;
+    });
+
+    return {
+      totalApplications: rawSummary.totalApplications,
+      byStatus,
+      byWorkMode,
+      appliedThisWeek: rawSummary.appliedThisWeek,
+      appliedThisMonth: rawSummary.appliedThisMonth,
+      upcomingInterviewsCount: rawSummary.upcomingInterviewsCount,
+    };
+  }
 }
