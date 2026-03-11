@@ -22,7 +22,11 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
-import { ReminderSummaryResponseDto, ReminderDetailResponseDto } from './dto/reminder-response.dto';
+import {
+  ReminderSummaryResponseDto,
+  ReminderDetailResponseDto,
+  ReminderDashboardSummaryDto,
+} from './dto/reminder-response.dto';
 
 @ApiTags('Reminders')
 @ApiBearerAuth()
@@ -65,6 +69,17 @@ export class RemindersController {
   async findUpcoming(@CurrentUser() user: UserPayload) {
     const reminders = await this.remindersService.findUpcoming(user);
     return plainToInstance(ReminderSummaryResponseDto, reminders);
+  }
+
+  @Get('summary/dashboard')
+  @ApiOperation({ summary: 'Get a lightweight count of upcoming reminders for dashboards' })
+  @ApiResponse({
+    status: 200,
+    type: ReminderDashboardSummaryDto,
+  })
+  async getDashboardSummary(@CurrentUser() user: UserPayload) {
+    const summary = await this.remindersService.getDashboardSummary(user);
+    return plainToInstance(ReminderDashboardSummaryDto, summary);
   }
 
   @Get('job-application/:jobApplicationId')

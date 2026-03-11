@@ -25,6 +25,11 @@ export class RemindersService {
     return this.repository.findUpcoming(user);
   }
 
+  async getDashboardSummary(user: UserPayload) {
+    const count = await this.repository.countUpcoming(user);
+    return { upcomingCount: count };
+  }
+
   async findAllByJobApplication(user: UserPayload, jobApplicationId: string) {
     return this.repository.findAllByJobApplication(user, jobApplicationId);
   }

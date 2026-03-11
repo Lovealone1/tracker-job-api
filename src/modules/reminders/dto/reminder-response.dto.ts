@@ -83,3 +83,10 @@ export class ReminderDetailResponseDto extends ReminderSummaryResponseDto {
   @Expose()
   updatedAt: Date;
 }
+
+export class ReminderDashboardSummaryDto {
+  @ApiProperty({ example: 5, description: 'Number of upcoming pending reminders in the next 14 days' })
+  @Expose()
+  upcomingCount: number;
+}
+

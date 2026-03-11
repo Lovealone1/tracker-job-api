@@ -77,6 +77,23 @@ export class RemindersRepository {
     });
   }
 
+  async countUpcoming(user: UserPayload): Promise<number> {
+    const today = new Date();
+    const next14Days = new Date();
+    next14Days.setDate(today.getDate() + 14);
+
+    return this.prisma.reminder.count({
+      where: {
+        profileId: user.sub,
+        status: 'PENDING',
+        dueAt: {
+          gte: today,
+          lte: next14Days,
+        },
+      },
+    });
+  }
+
   async findAllByJobApplication(user: UserPayload, jobApplicationId: string): Promise<Reminder[]> {
     const jobApp = await this.prisma.jobApplication.findFirst({
       where: { id: jobApplicationId, profileId: user.sub },
