@@ -23,7 +23,7 @@ import { Throttle } from '@nestjs/throttler';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN) // ENFORCES ADMIN ROLE FOR ALL ENDPOINTS IN THIS CONTROLLER
-@Controller('api/v1/users')
+@Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

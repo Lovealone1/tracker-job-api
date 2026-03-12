@@ -32,7 +32,7 @@ import { Throttle } from '@nestjs/throttler';
 @ApiTags('Reminders')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/reminders')
+@Controller('reminders')
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 

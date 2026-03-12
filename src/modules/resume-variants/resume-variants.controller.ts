@@ -23,7 +23,7 @@ import { Throttle } from '@nestjs/throttler';
 @ApiTags('Resume Variants')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/resume-variants')
+@Controller('resume-variants')
 export class ResumeVariantsController {
   constructor(private readonly resumeVariantsService: ResumeVariantsService) {}
 

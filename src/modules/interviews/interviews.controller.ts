@@ -29,7 +29,7 @@ import { Throttle } from '@nestjs/throttler';
 @ApiTags('Interviews')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/interviews')
+@Controller('interviews')
 export class InterviewsController {
   constructor(private readonly interviewsService: InterviewsService) {}
 
