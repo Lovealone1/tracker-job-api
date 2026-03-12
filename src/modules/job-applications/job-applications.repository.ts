@@ -24,12 +24,36 @@ export class JobApplicationsRepository {
     return this.prisma.jobApplication.create({ data: createData });
   }
 
-  async findAll(user: UserPayload, where?: Prisma.JobApplicationWhereInput): Promise<JobApplication[]> {
+  async findAll(
+    user: UserPayload,
+    skip?: number,
+    take?: number,
+    search?: string,
+    where?: Prisma.JobApplicationWhereInput
+  ): Promise<[JobApplication[], number]> {
     const baseWhere = this.getBaseWhere(user);
-    return this.prisma.jobApplication.findMany({
-      where: { ...baseWhere, ...where },
-      orderBy: { createdAt: 'desc' },
-    });
+    
+    const searchWhere: Prisma.JobApplicationWhereInput = search ? {
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { company: { contains: search, mode: 'insensitive' } },
+        { location: { contains: search, mode: 'insensitive' } },
+      ]
+    } : {};
+
+    const combinedWhere = { ...baseWhere, ...searchWhere, ...where };
+
+    const [data, total] = await Promise.all([
+      this.prisma.jobApplication.findMany({
+        where: combinedWhere,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.jobApplication.count({ where: combinedWhere }),
+    ]);
+
+    return [data, total];
   }
 
   async findOne(user: UserPayload, id: string): Promise<JobApplication | null> {

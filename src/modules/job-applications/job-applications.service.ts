@@ -8,7 +8,7 @@ import { UpdateJobApplicationResumeVariantDto } from './dto/update-job-applicati
 import { JobApplicationsRepository } from './job-applications.repository';
 import { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
-
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 @Injectable()
 export class JobApplicationsService {
   constructor(
@@ -24,8 +24,28 @@ export class JobApplicationsService {
     return this.jobApplicationsRepository.create(user, createDto as any);
   }
 
-  async findAll(user: UserPayload) {
-    return this.jobApplicationsRepository.findAll(user);
+  async findAll(user: UserPayload, query: PaginationQueryDto) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.jobApplicationsRepository.findAll(
+      user,
+      skip,
+      limit,
+      search,
+    );
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 
   async findOne(user: UserPayload, id: string) {
@@ -45,7 +65,14 @@ export class JobApplicationsService {
   }
 
   async updateStatus(user: UserPayload, id: string, updateStatusDto: UpdateJobApplicationStatusDto) {
-    const updated = await this.jobApplicationsRepository.update(user, id, { status: updateStatusDto.status });
+    const updateData: any = { status: updateStatusDto.status };
+
+    // When status is anything other than SAVED, set appliedAt to now
+    if (updateStatusDto.status !== 'SAVED') {
+      updateData.appliedAt = new Date();
+    }
+
+    const updated = await this.jobApplicationsRepository.update(user, id, updateData);
     if (!updated) {
       throw new NotFoundException(`Job application with ID ${id} not found`);
     }

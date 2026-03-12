@@ -25,16 +25,35 @@ export class InterviewsRepository {
     });
   }
 
-  async findAll(user: UserPayload): Promise<Interview[]> {
-    return this.prisma.interview.findMany({
-      where: user.role === 'ADMIN' ? undefined : { profileId: user.sub },
-      orderBy: { scheduledAt: 'asc' },
-      include: {
+  async findAll(user: UserPayload, skip: number, limit: number, search?: string): Promise<[Interview[], number]> {
+    const where: Prisma.InterviewWhereInput = {
+      ...(user.role === 'ADMIN' ? {} : { profileId: user.sub }),
+      ...(search ? {
         jobApplication: {
-          select: { title: true, company: true },
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { company: { contains: search, mode: 'insensitive' } },
+          ],
         },
-      },
-    });
+      } : {}),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.interview.findMany({
+        where,
+        orderBy: { scheduledAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          jobApplication: {
+            select: { title: true, company: true },
+          },
+        },
+      }),
+      this.prisma.interview.count({ where }),
+    ]);
+
+    return [data, total];
   }
 
   async findUpcoming(user: UserPayload): Promise<Interview[]> {

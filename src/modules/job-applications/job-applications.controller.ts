@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, SerializeOptions } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, SerializeOptions, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JobApplicationsService } from './job-applications.service';
 import { CreateJobApplicationDto } from './dto/create-job-application.dto';
@@ -17,6 +17,8 @@ import { JobApplicationResponseDto } from './dto/job-application-response.dto';
 import { JobApplicationSummaryResponseDto } from './dto/job-application-summary-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { Throttle } from '@nestjs/throttler';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+import { PaginatedJobApplicationResponseDto } from './dto/paginated-job-application-response.dto';
 
 @ApiTags('Job Applications')
 @ApiBearerAuth()
@@ -38,10 +40,16 @@ export class JobApplicationsController {
   @Get()
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'Get all job applications for the current user' })
-  @ApiResponse({ status: 200, description: 'Return all job applications.', type: [JobApplicationResponseDto] })
-  async findAll(@CurrentUser() user: UserPayload): Promise<JobApplicationResponseDto[]> {
-    const applications = await this.jobApplicationsService.findAll(user);
-    return applications.map(app => plainToInstance(JobApplicationResponseDto, app));
+  @ApiResponse({ status: 200, description: 'Return all job applications.', type: PaginatedJobApplicationResponseDto })
+  async findAll(
+    @CurrentUser() user: UserPayload,
+    @Query() query: PaginationQueryDto,
+  ): Promise<PaginatedJobApplicationResponseDto> {
+    const result = await this.jobApplicationsService.findAll(user, query);
+    return {
+      data: result.data.map(app => plainToInstance(JobApplicationResponseDto, app)),
+      meta: result.meta,
+    };
   }
 
   @Get('summary')
