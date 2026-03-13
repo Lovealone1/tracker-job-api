@@ -72,6 +72,10 @@ export class ResumeVariantResponseDto {
   pdfUrl?: string;
 
   @Expose()
+  @ApiPropertyOptional({ example: 'classic' })
+  template?: string;
+
+  @Expose()
   @ApiProperty()
   createdAt: Date;
 

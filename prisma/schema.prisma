@@ -168,7 +168,8 @@ model ResumeVariant {
   resumeId  String
   profileId String
 
-  title String
+  title    String
+  template String?
 
   // Copia de la Estructura Base del CV (Modificable)
   resumeName   String

@@ -18,13 +18,13 @@ export class CreateResumeVariantDto {
   @IsNotEmpty()
   resumeId: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The ID of the JobApplication this variant belongs to',
     example: 'uuid-5678',
   })
   @IsString()
-  @IsNotEmpty()
-  jobApplicationId: string;
+  @IsOptional()
+  jobApplicationId?: string;
 
   @ApiPropertyOptional({
     description: 'Custom title for this variant',
@@ -137,4 +137,12 @@ export class CreateResumeVariantDto {
   @IsString()
   @IsOptional()
   pdfUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'RenderCV theme to use',
+    example: 'classic',
+  })
+  @IsString()
+  @IsOptional()
+  template?: string;
 }

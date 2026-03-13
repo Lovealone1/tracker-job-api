@@ -49,6 +49,14 @@ export class JobApplicationsRepository {
         orderBy: { createdAt: 'desc' },
         skip,
         take,
+        include: {
+          resumeVariant: {
+            select: {
+              id: true,
+              title: true,
+            }
+          }
+        }
       }),
       this.prisma.jobApplication.count({ where: combinedWhere }),
     ]);
@@ -60,6 +68,14 @@ export class JobApplicationsRepository {
     const baseWhere = this.getBaseWhere(user);
     return this.prisma.jobApplication.findFirst({
       where: { id, ...baseWhere },
+      include: {
+        resumeVariant: {
+          select: {
+            id: true,
+            title: true,
+          }
+        }
+      }
     });
   }
 

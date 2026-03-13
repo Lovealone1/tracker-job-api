@@ -96,15 +96,23 @@ export class JobApplicationsService {
   }
 
   async updateResumeVariant(user: UserPayload, id: string, updateResumeVariantDto: UpdateJobApplicationResumeVariantDto) {
-    // Validar ownership del resumeVariantId antes de vincular
-    await this.assertResumeVariantOwnership(user.sub, updateResumeVariantDto.resumeVariantId);
+    const { resumeVariantId } = updateResumeVariantDto;
 
-    const updated = await this.jobApplicationsRepository.update(user, id, {
-      resumeVariant: { connect: { id: updateResumeVariantDto.resumeVariantId } }
-    });
-    if (!updated) {
-      throw new NotFoundException(`Job application with ID ${id} not found`);
+    // If ID is provided, validate ownership and connect
+    if (resumeVariantId) {
+      await this.assertResumeVariantOwnership(user.sub, resumeVariantId);
+      const updated = await this.jobApplicationsRepository.update(user, id, {
+        resumeVariant: { connect: { id: resumeVariantId } }
+      });
+      if (!updated) throw new NotFoundException(`Job application with ID ${id} not found`);
+      return updated;
     }
+
+    // If ID is missing or empty, disconnect
+    const updated = await this.jobApplicationsRepository.update(user, id, {
+      resumeVariant: { disconnect: true }
+    });
+    if (!updated) throw new NotFoundException(`Job application with ID ${id} not found`);
     return updated;
   }
 

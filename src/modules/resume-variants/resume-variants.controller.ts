@@ -19,13 +19,21 @@ import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { ResumeVariantResponseDto } from './dto/resume-variant-response.dto';
 import { Throttle } from '@nestjs/throttler';
+import { ResumesRenderingService } from '../resumes/resumes-rendering.service';
+import { createReadStream } from 'fs';
+import * as fs from 'fs';
+import { StreamableFile, Res, Header, NotFoundException } from '@nestjs/common';
+import type { Response } from 'express';
 
 @ApiTags('Resume Variants')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('resume-variants')
 export class ResumeVariantsController {
-  constructor(private readonly resumeVariantsService: ResumeVariantsService) {}
+  constructor(
+    private readonly resumeVariantsService: ResumeVariantsService,
+    private readonly renderingService: ResumesRenderingService,
+  ) {}
 
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post()
@@ -97,5 +105,55 @@ export class ResumeVariantsController {
   async remove(@CurrentUser() user: UserPayload, @Param('id') id: string) {
     await this.resumeVariantsService.remove(user, id);
     return { message: 'Resume variant deleted successfully' };
+  }
+
+  @Post(':id/render')
+  @ApiOperation({ summary: 'Render the variant using RenderCV engine' })
+  @ApiResponse({ status: 200, description: 'Variant rendered successfully' })
+  async render(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const variant = await this.resumeVariantsService.findOne(user, id);
+    const result = await this.renderingService.renderFromData(variant, `variant-${id}`);
+    return {
+      message: 'Variant rendered successfully',
+      pdfUrl: `/resume-variants/${id}/pdf`,
+      previewUrl: `/resume-variants/${id}/preview`,
+      pageCount: result.pngPaths.length,
+    };
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Download generated PDF for variant' })
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename="variant.pdf"')
+  async getPdf(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const variant = await this.resumeVariantsService.findOne(user, id);
+    const { pdfPath, tempDir } = await this.renderingService.renderFromData(variant, `variant-${id}`);
+    const file = createReadStream(pdfPath);
+    
+    file.on('close', () => {
+      this.renderingService.cleanup(tempDir);
+    });
+
+    return new StreamableFile(file);
+  }
+
+  @Get(':id/preview')
+  @ApiOperation({ summary: 'Get generated PNG preview for variant' })
+  @Header('Content-Type', 'image/png')
+  async getPreview(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const variant = await this.resumeVariantsService.findOne(user, id);
+    const { pngPaths, tempDir } = await this.renderingService.renderFromData(variant, `variant-${id}`);
+    if (pngPaths.length === 0 || !fs.existsSync(pngPaths[0])) {
+      this.renderingService.cleanup(tempDir);
+      throw new NotFoundException('Preview not available');
+    }
+    
+    const file = createReadStream(pngPaths[0]);
+    
+    file.on('close', () => {
+      this.renderingService.cleanup(tempDir);
+    });
+
+    return new StreamableFile(file);
   }
 }
