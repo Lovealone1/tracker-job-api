@@ -87,6 +87,37 @@ export class ReminderDetailResponseDto extends ReminderSummaryResponseDto {
 export class ReminderDashboardSummaryDto {
   @ApiProperty({ example: 5, description: 'Number of upcoming pending reminders in the next 14 days' })
   @Expose()
+  @Type(() => Number)
   upcomingCount: number;
+}
+
+class PaginationMetaDto {
+  @ApiProperty()
+  @Expose()
+  total: number;
+
+  @ApiProperty()
+  @Expose()
+  page: number;
+
+  @ApiProperty()
+  @Expose()
+  limit: number;
+
+  @ApiProperty()
+  @Expose()
+  totalPages: number;
+}
+
+export class PaginatedRemindersResponseDto {
+  @ApiProperty({ type: [ReminderSummaryResponseDto] })
+  @Expose()
+  @Type(() => ReminderSummaryResponseDto)
+  data: ReminderSummaryResponseDto[];
+
+  @ApiProperty()
+  @Expose()
+  @Type(() => PaginationMetaDto)
+  meta: PaginationMetaDto;
 }
 

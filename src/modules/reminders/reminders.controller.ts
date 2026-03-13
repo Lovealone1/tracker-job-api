@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { RemindersService } from './reminders.service';
 import { CreateReminderDto } from './dto/create-reminder.dto';
@@ -26,8 +27,10 @@ import {
   ReminderSummaryResponseDto,
   ReminderDetailResponseDto,
   ReminderDashboardSummaryDto,
+  PaginatedRemindersResponseDto,
 } from './dto/reminder-response.dto';
 import { Throttle } from '@nestjs/throttler';
+import { ReminderPaginationQueryDto } from './dto/reminder-pagination.dto';
 
 @ApiTags('Reminders')
 @ApiBearerAuth()
@@ -45,20 +48,29 @@ export class RemindersController {
     type: ReminderDetailResponseDto,
   })
   async create(@CurrentUser() user: UserPayload, @Body() createReminderDto: CreateReminderDto) {
+    console.log('[RemindersController] create - incoming dueAt:', createReminderDto.dueAt);
     const reminder = await this.remindersService.create(user, createReminderDto);
     return plainToInstance(ReminderDetailResponseDto, reminder);
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all reminders for the user' })
+  @ApiOperation({ summary: 'List all reminders for the user with pagination and filters' })
   @ApiResponse({
     status: 200,
-    description: 'Lightweight list of user reminders.',
-    type: [ReminderSummaryResponseDto],
+    description: 'Paginated list of user reminders.',
+    type: PaginatedRemindersResponseDto,
   })
-  async findAll(@CurrentUser() user: UserPayload) {
-    const reminders = await this.remindersService.findAll(user);
-    return plainToInstance(ReminderSummaryResponseDto, reminders);
+  async findAll(@CurrentUser() user: UserPayload, @Query() query: ReminderPaginationQueryDto) {
+    const result = await this.remindersService.findAll(user, query);
+    return {
+      data: plainToInstance(ReminderSummaryResponseDto, result.data),
+      meta: {
+        total: result.total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(result.total / (query.limit || 100)),
+      },
+    };
   }
 
   @Get('upcoming')
