@@ -8,7 +8,7 @@ import {
   IsInt,
   Min,
 } from 'class-validator';
-import { InterviewType } from '@prisma/client';
+import { InterviewType, InterviewStatus } from '@prisma/client';
 
 export class CreateInterviewDto {
   @ApiProperty({
@@ -91,4 +91,19 @@ export class CreateInterviewDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ApiPropertyOptional({
+    description: 'Feedback after the interview',
+  })
+  @IsString()
+  @IsOptional()
+  feedback?: string;
+
+  @ApiPropertyOptional({
+    description: 'Interview status',
+    enum: InterviewStatus,
+  })
+  @IsEnum(InterviewStatus)
+  @IsOptional()
+  status?: InterviewStatus;
 }

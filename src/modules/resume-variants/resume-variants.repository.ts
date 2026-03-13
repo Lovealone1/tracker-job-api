@@ -19,13 +19,15 @@ export class ResumeVariantsRepository {
       throw new NotFoundException(`Base Resume ID ${resumeId} not found or you don't have access.`);
     }
 
-    // 2. Verificar si el JobApplication pertenece al usuario
-    const jobApp = await this.prisma.jobApplication.findFirst({
-      where: { id: jobApplicationId, profileId: user.sub },
-    });
+    // 2. Verificar si el JobApplication pertenece al usuario (si se proporciona)
+    if (jobApplicationId) {
+      const jobApp = await this.prisma.jobApplication.findFirst({
+        where: { id: jobApplicationId, profileId: user.sub },
+      });
 
-    if (!jobApp) {
-      throw new NotFoundException(`Job Application ID ${jobApplicationId} not found or you don't have access.`);
+      if (!jobApp) {
+        throw new NotFoundException(`Job Application ID ${jobApplicationId} not found or you don't have access.`);
+      }
     }
 
     // 3. Crear variante heredando de la base y aplicando overrides
@@ -47,6 +49,7 @@ export class ResumeVariantsRepository {
       atsScore: overrides.atsScore || null,
       matchScore: overrides.matchScore || null,
       pdfUrl: overrides.pdfUrl || null,
+      template: overrides.template || baseResume.template,
     };
 
     return this.prisma.$transaction(async (tx) => {
@@ -55,11 +58,13 @@ export class ResumeVariantsRepository {
         data: variantData,
       });
 
-      // Vincular a la Job Application
-      await tx.jobApplication.update({
-        where: { id: jobApplicationId },
-        data: { resumeVariantId: newVariant.id },
-      });
+      // Vincular a la Job Application si se proporcionó
+      if (jobApplicationId) {
+        await tx.jobApplication.update({
+          where: { id: jobApplicationId },
+          data: { resumeVariantId: newVariant.id },
+        });
+      }
 
       return newVariant;
     });

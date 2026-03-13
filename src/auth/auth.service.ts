@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { lastValueFrom } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -80,5 +81,34 @@ export class AuthService {
     }
 
     return profile;
+  }
+
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post(
+          `${this.supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
+          {
+            refresh_token: refreshTokenDto.refreshToken,
+          },
+          {
+            headers: {
+              apikey: this.supabaseKey,
+              'Content-Type': 'application/json',
+            },
+          },
+        )
+      );
+
+      return response.data; // contains new access_token, refresh_token, etc.
+    } catch (error) {
+      if (error.response) {
+        throw new HttpException(
+          error.response.data.error_description || error.response.data.msg || 'Error refreshing token',
+          error.response.status || HttpStatus.UNAUTHORIZED,
+        );
+      }
+      throw new UnauthorizedException('Error refreshing token with Supabase Auth');
+    }
   }
 }

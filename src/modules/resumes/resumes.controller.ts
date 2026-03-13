@@ -7,8 +7,14 @@ import {
   Param,
   Delete,
   UseGuards,
+  StreamableFile,
+  Header,
+  NotFoundException,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ResumesService } from './resumes.service';
+import { ResumesRenderingService } from './resumes-rendering.service';
 import { CreateResumeDto } from './dto/create-resume.dto';
 import { UpdateResumeDto } from './dto/update-resume.dto';
 import {
@@ -25,13 +31,19 @@ import { plainToInstance } from 'class-transformer';
 import { ResumeSummaryResponseDto } from './dto/resume-summary-response.dto';
 import { ResumeDetailResponseDto } from './dto/resume-detail-response.dto';
 import { Throttle } from '@nestjs/throttler';
+import { createReadStream } from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @ApiTags('Resumes')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/resumes')
+@Controller('resumes')
 export class ResumesController {
-  constructor(private readonly resumesService: ResumesService) {}
+  constructor(
+    private readonly resumesService: ResumesService,
+    private readonly renderingService: ResumesRenderingService,
+  ) {}
 
   @Throttle({ default: { limit: 20, ttl: 10000 } })
   @Post()
@@ -124,5 +136,84 @@ export class ResumesController {
   async remove(@CurrentUser() user: UserPayload, @Param('id') id: string) {
     await this.resumesService.remove(user, id);
     return { message: 'Resume deleted successfully' };
+  }
+
+  @Post(':id/render')
+  @ApiOperation({ summary: 'Render the resume using RenderCV engine' })
+  @ApiResponse({ status: 200, description: 'Resume rendered successfully' })
+  async render(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const result = await this.renderingService.renderResume(user, id);
+    return {
+      message: 'Resume rendered successfully',
+      pdfUrl: `/resumes/${id}/pdf`,
+      previewUrl: `/resumes/${id}/preview`,
+      pageCount: result.pngPaths.length,
+    };
+  }
+
+  @Post('render-live/pdf')
+  @ApiOperation({ summary: 'Generate PDF from current editor state' })
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename="resume.pdf"')
+  async renderLivePdf(@CurrentUser() user: UserPayload, @Body() data: any) {
+    const { pdfPath, tempDir } = await this.renderingService.renderFromData(data, 'live');
+    const file = createReadStream(pdfPath);
+    file.on('close', () => this.renderingService.cleanup(tempDir));
+    return new StreamableFile(file);
+  }
+
+  @Post('render-live/preview')
+  @ApiOperation({ summary: 'Generate PNG preview from current editor state' })
+  async renderLivePreview(
+    @CurrentUser() user: UserPayload, 
+    @Body() data: any,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { pngPaths, tempDir } = await this.renderingService.renderFromData(data, 'live');
+    if (pngPaths.length === 0) {
+      this.renderingService.cleanup(tempDir);
+      throw new NotFoundException('Preview not available');
+    }
+
+    res.set('x-page-count', pngPaths.length.toString());
+    res.set('Content-Type', 'image/png');
+    
+    const file = createReadStream(pngPaths[0]);
+    file.on('close', () => this.renderingService.cleanup(tempDir));
+    return new StreamableFile(file);
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Download generated PDF' })
+  @Header('Content-Type', 'application/pdf')
+  @Header('Content-Disposition', 'attachment; filename="resume.pdf"')
+  async getPdf(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const { pdfPath, tempDir } = await this.renderingService.renderResume(user, id);
+    const file = createReadStream(pdfPath);
+    
+    file.on('close', () => {
+      this.renderingService.cleanup(tempDir);
+    });
+
+    return new StreamableFile(file);
+  }
+
+  @Get(':id/preview')
+  @ApiOperation({ summary: 'Get generated PNG preview' })
+  @Header('Content-Type', 'image/png')
+  async getPreview(@CurrentUser() user: UserPayload, @Param('id') id: string) {
+    const { pngPaths, tempDir } = await this.renderingService.renderResume(user, id);
+    if (pngPaths.length === 0 || !fs.existsSync(pngPaths[0])) {
+      this.renderingService.cleanup(tempDir);
+      throw new NotFoundException('Preview not available');
+    }
+    
+    const file = createReadStream(pngPaths[0]);
+    
+    file.on('close', () => {
+      this.renderingService.cleanup(tempDir);
+    });
+
+    return new StreamableFile(file);
   }
 }

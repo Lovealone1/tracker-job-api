@@ -107,6 +107,10 @@ export class JobApplicationResponseDto {
   @Expose()
   resumeVariantId: string;
 
+  @ApiPropertyOptional({ description: 'The resume variant used for this application' })
+  @Expose()
+  resumeVariant: { id: string; title: string };
+
   constructor(partial: Partial<JobApplicationResponseDto>) {
     Object.assign(this, partial);
   }

@@ -43,6 +43,14 @@ export class InterviewSummaryResponseDto {
   @ApiPropertyOptional({ type: JobApplicationLightDto })
   @Type(() => JobApplicationLightDto)
   jobApplication?: JobApplicationLightDto;
+
+  @Expose()
+  @ApiPropertyOptional()
+  notes?: string;
+
+  @Expose()
+  @ApiPropertyOptional()
+  feedback?: string;
 }
 
 @Exclude()
@@ -66,14 +74,6 @@ export class InterviewDetailResponseDto extends InterviewSummaryResponseDto {
   @Expose()
   @ApiPropertyOptional()
   interviewerEmail?: string;
-
-  @Expose()
-  @ApiPropertyOptional()
-  notes?: string;
-
-  @Expose()
-  @ApiPropertyOptional()
-  feedback?: string;
 
   @Expose()
   @ApiProperty()

@@ -3,6 +3,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, Reminder } from '@prisma/client';
 import { UserPayload } from '../../auth/decorators/current-user.decorator';
 
+import { ReminderPaginationQueryDto } from './dto/reminder-pagination.dto';
+
 @Injectable()
 export class RemindersRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -36,19 +38,49 @@ export class RemindersRepository {
     });
   }
 
-  async findAll(user: UserPayload): Promise<Reminder[]> {
-    return this.prisma.reminder.findMany({
-      where: user.role === 'ADMIN' ? undefined : { profileId: user.sub },
-      orderBy: { dueAt: 'asc' },
-      include: {
-        jobApplication: {
-          select: { title: true, company: true },
+  async findAll(user: UserPayload, query: ReminderPaginationQueryDto): Promise<{ data: Reminder[]; total: number }> {
+    const { page = 1, limit = 100, search, from, to, status, type } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ReminderWhereInput = {
+      profileId: user.role === 'ADMIN' && !user.sub ? undefined : user.sub,
+    };
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (from || to) {
+      where.dueAt = {};
+      if (from) where.dueAt.gte = new Date(from);
+      if (to) where.dueAt.lte = new Date(to);
+    }
+
+    if (status) where.status = status;
+    if (type) where.type = type;
+
+    const [data, total] = await Promise.all([
+      this.prisma.reminder.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { dueAt: 'asc' },
+        include: {
+          jobApplication: {
+            select: { title: true, company: true },
+          },
+          interview: {
+            select: { type: true, scheduledAt: true },
+          },
         },
-        interview: {
-          select: { type: true, scheduledAt: true },
-        },
-      },
-    });
+      }),
+      this.prisma.reminder.count({ where }),
+    ]);
+
+    return { data, total };
   }
 
   async findUpcoming(user: UserPayload): Promise<Reminder[]> {

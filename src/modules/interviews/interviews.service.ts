@@ -9,6 +9,7 @@ import {
 } from './dto/update-interview.dto';
 import { InterviewsRepository } from './interviews.repository';
 import { UserPayload } from '../../auth/decorators/current-user.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class InterviewsService {
@@ -18,8 +19,23 @@ export class InterviewsService {
     return this.repository.create(user, createInterviewDto);
   }
 
-  async findAll(user: UserPayload) {
-    return this.repository.findAll(user);
+  async findAll(user: UserPayload, query: PaginationQueryDto) {
+    const { page = 1, limit = 10, search } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.repository.findAll(user, skip, limit, search);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 
   async findUpcoming(user: UserPayload) {

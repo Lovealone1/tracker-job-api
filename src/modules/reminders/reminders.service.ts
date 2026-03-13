@@ -9,6 +9,8 @@ import {
 import { RemindersRepository } from './reminders.repository';
 import { UserPayload } from '../../auth/decorators/current-user.decorator';
 
+import { ReminderPaginationQueryDto } from './dto/reminder-pagination.dto';
+
 @Injectable()
 export class RemindersService {
   constructor(private readonly repository: RemindersRepository) {}
@@ -17,8 +19,8 @@ export class RemindersService {
     return this.repository.create(user, createReminderDto);
   }
 
-  async findAll(user: UserPayload) {
-    return this.repository.findAll(user);
+  async findAll(user: UserPayload, query: ReminderPaginationQueryDto) {
+    return this.repository.findAll(user, query);
   }
 
   async findUpcoming(user: UserPayload) {

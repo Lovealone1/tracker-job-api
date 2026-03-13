@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { InterviewsService } from './interviews.service';
 import { CreateInterviewDto } from './dto/create-interview.dto';
@@ -25,11 +26,12 @@ import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { InterviewSummaryResponseDto, InterviewDetailResponseDto } from './dto/interview-response.dto';
 import { Throttle } from '@nestjs/throttler';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @ApiTags('Interviews')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/interviews')
+@Controller('interviews')
 export class InterviewsController {
   constructor(private readonly interviewsService: InterviewsService) {}
 
@@ -47,15 +49,17 @@ export class InterviewsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all interviews for the user (includes job title)' })
+  @ApiOperation({ summary: 'List all interviews for the user (paginated, sorted desc)' })
   @ApiResponse({
     status: 200,
-    description: 'Lightweight list of user interviews.',
-    type: [InterviewSummaryResponseDto],
+    description: 'Paginated list of user interviews.',
   })
-  async findAll(@CurrentUser() user: UserPayload) {
-    const interviews = await this.interviewsService.findAll(user);
-    return plainToInstance(InterviewSummaryResponseDto, interviews);
+  async findAll(@CurrentUser() user: UserPayload, @Query() query: PaginationQueryDto) {
+    const result = await this.interviewsService.findAll(user, query);
+    return {
+      data: plainToInstance(InterviewSummaryResponseDto, result.data),
+      meta: result.meta,
+    };
   }
 
   @Get('upcoming')
