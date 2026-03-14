@@ -25,6 +25,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import type { UserPayload } from '../../auth/decorators/current-user.decorator';
 import { plainToInstance } from 'class-transformer';
 import { InterviewSummaryResponseDto, InterviewDetailResponseDto } from './dto/interview-response.dto';
+import { InterviewDashboardSummaryDto } from './dto/interview-dashboard-summary.dto';
 import { Throttle } from '@nestjs/throttler';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
@@ -72,6 +73,22 @@ export class InterviewsController {
   async findUpcoming(@CurrentUser() user: UserPayload) {
     const interviews = await this.interviewsService.findUpcoming(user);
     return plainToInstance(InterviewSummaryResponseDto, interviews);
+  }
+
+  @Get('summary')
+  @ApiOperation({ summary: 'Get aggregated summary and metrics for user interviews' })
+  @ApiResponse({ status: 200, type: InterviewDashboardSummaryDto })
+  async getSummary(@CurrentUser() user: UserPayload): Promise<InterviewDashboardSummaryDto> {
+    const summary = await this.interviewsService.getSummary(user);
+    return plainToInstance(InterviewDashboardSummaryDto, summary);
+  }
+
+  @Get('next')
+  @ApiOperation({ summary: 'Get the single next scheduled interview' })
+  @ApiResponse({ status: 200, type: InterviewDetailResponseDto, description: 'The next interview or null' })
+  async findNext(@CurrentUser() user: UserPayload) {
+    const interview = await this.interviewsService.findNext(user);
+    return interview ? plainToInstance(InterviewDetailResponseDto, interview) : null;
   }
 
   @Get('job-application/:jobApplicationId')

@@ -51,17 +51,6 @@ export class InterviewSummaryResponseDto {
   @Expose()
   @ApiPropertyOptional()
   feedback?: string;
-}
-
-@Exclude()
-export class InterviewDetailResponseDto extends InterviewSummaryResponseDto {
-  @Expose()
-  @ApiPropertyOptional()
-  timezone?: string;
-
-  @Expose()
-  @ApiPropertyOptional()
-  location?: string;
 
   @Expose()
   @ApiPropertyOptional()
@@ -70,6 +59,13 @@ export class InterviewDetailResponseDto extends InterviewSummaryResponseDto {
   @Expose()
   @ApiPropertyOptional()
   interviewerName?: string;
+}
+
+@Exclude()
+export class InterviewDetailResponseDto extends InterviewSummaryResponseDto {
+  @Expose()
+  @ApiPropertyOptional()
+  timezone?: string;
 
   @Expose()
   @ApiPropertyOptional()

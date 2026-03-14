@@ -89,4 +89,46 @@ export class InterviewsService {
     }
     return true;
   }
+
+  async getSummary(user: UserPayload) {
+    const rawSum = await this.repository.getSummary(user);
+
+    const byStatus = {
+      SCHEDULED: 0,
+      COMPLETED: 0,
+      CANCELED: 0,
+      RESCHEDULED: 0,
+      NO_SHOW: 0,
+    };
+
+    rawSum.statusGroups.forEach((group: any) => {
+      byStatus[group.status] = group._count.status;
+    });
+
+    const byType = {
+      SCREENING: 0,
+      HR: 0,
+      TECHNICAL: 0,
+      CULTURAL: 0,
+      BEHAVIORAL: 0,
+      CASE_STUDY: 0,
+      FINAL: 0,
+      OTHER: 0,
+    };
+
+    rawSum.typeGroups.forEach((group: any) => {
+      byType[group.type] = group._count.type;
+    });
+
+    return {
+      totalInterviews: rawSum.totalInterviews,
+      byStatus,
+      byType,
+      upcomingInterviewsCount: rawSum.upcomingInterviewsCount,
+    };
+  }
+
+  async findNext(user: UserPayload) {
+    return this.repository.findNext(user);
+  }
 }

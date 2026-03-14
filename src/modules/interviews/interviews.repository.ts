@@ -132,4 +132,65 @@ export class InterviewsRepository {
     });
     return true;
   }
+
+  async getSummary(user: UserPayload) {
+    const where: Prisma.InterviewWhereInput = {
+      ...(user.role === 'ADMIN' ? {} : { profileId: user.sub }),
+    };
+
+    const today = new Date();
+    const next14Days = new Date();
+    next14Days.setDate(today.getDate() + 14);
+
+    const [totalInterviews, statusGroups, typeGroups, upcomingInterviewsCount] = await Promise.all([
+      this.prisma.interview.count({ where }),
+      this.prisma.interview.groupBy({
+        by: ['status'],
+        where,
+        _count: { status: true },
+      }),
+      this.prisma.interview.groupBy({
+        by: ['type'],
+        where,
+        _count: { type: true },
+      }),
+      this.prisma.interview.count({
+        where: {
+          ...where,
+          status: 'SCHEDULED',
+          scheduledAt: {
+            gte: today,
+            lte: next14Days,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      totalInterviews,
+      statusGroups,
+      typeGroups,
+      upcomingInterviewsCount,
+    };
+  }
+
+  async findNext(user: UserPayload): Promise<Interview | null> {
+    const now = new Date();
+    
+    return this.prisma.interview.findFirst({
+      where: {
+        profileId: user.sub,
+        status: 'SCHEDULED',
+        scheduledAt: {
+          gt: now,
+        },
+      },
+      orderBy: {
+        scheduledAt: 'asc',
+      },
+      include: {
+        jobApplication: true, // Return full job application too
+      },
+    });
+  }
 }
