@@ -89,6 +89,11 @@ export class ReminderDashboardSummaryDto {
   @Expose()
   @Type(() => Number)
   upcomingCount: number;
+
+  @ApiProperty({ example: 10, description: 'Total number of completed reminders' })
+  @Expose()
+  @Type(() => Number)
+  completedCount: number;
 }
 
 class PaginationMetaDto {

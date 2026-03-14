@@ -28,8 +28,11 @@ export class RemindersService {
   }
 
   async getDashboardSummary(user: UserPayload) {
-    const count = await this.repository.countUpcoming(user);
-    return { upcomingCount: count };
+    const [upcomingCount, completedCount] = await Promise.all([
+      this.repository.countUpcoming(user),
+      this.repository.countCompleted(user),
+    ]);
+    return { upcomingCount, completedCount };
   }
 
   async findAllByJobApplication(user: UserPayload, jobApplicationId: string) {

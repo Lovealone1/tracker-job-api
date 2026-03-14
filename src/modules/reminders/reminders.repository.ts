@@ -126,6 +126,15 @@ export class RemindersRepository {
     });
   }
 
+  async countCompleted(user: UserPayload): Promise<number> {
+    return this.prisma.reminder.count({
+      where: {
+        profileId: user.sub,
+        status: 'COMPLETED',
+      },
+    });
+  }
+
   async findAllByJobApplication(user: UserPayload, jobApplicationId: string): Promise<Reminder[]> {
     const jobApp = await this.prisma.jobApplication.findFirst({
       where: { id: jobApplicationId, profileId: user.sub },
