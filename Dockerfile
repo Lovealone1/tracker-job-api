@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     python3-dev \
+    python-is-python3 \
     build-essential \
     texlive-latex-recommended \
     texlive-fonts-recommended \
