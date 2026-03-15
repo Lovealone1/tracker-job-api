@@ -18,9 +18,9 @@ RUN apt-get update && apt-get install -y \
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Install RenderCV with full features
+# Install RenderCV with full features (v2.7)
 # Debian 12 requires --break-system-packages or a venv for system-wide pip
-RUN python3 -m pip install --no-cache-dir "rendercv[full]" --break-system-packages
+RUN python3 -m pip install --no-cache-dir "rendercv[full]==2.7" --break-system-packages
 
 # Verify installations
 RUN python3 -m rendercv --version && pnpm --version
