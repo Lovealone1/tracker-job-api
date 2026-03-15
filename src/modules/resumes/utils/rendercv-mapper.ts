@@ -98,10 +98,5 @@ export function mapResumeToRenderCV(resume: any): any {
         return 'classic';
       })(),
     },
-    settings: {
-      render_command: {
-        output_folder: 'rendercv_output',
-      },
-    },
   };
 }
