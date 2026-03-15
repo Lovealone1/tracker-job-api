@@ -1,8 +1,7 @@
-# Use Node.js 22 Bullseye for maximum compatibility
-FROM node:22-bullseye
+# Use Node.js 22 Bookworm (Debian 12) to get Python 3.11+
+FROM node:22-bookworm
 
 # Install Python, LaTeX, and essential build tools
-# We install texlive-latex-extra and latexmk which are common requirements for RenderCV
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -19,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g pnpm
 
 # Install RenderCV with full features
-# Using python3 -m pip is more robust in some environments
-RUN python3 -m pip install --no-cache-dir "rendercv[full]"
+# Debian 12 requires --break-system-packages or a venv for system-wide pip
+RUN python3 -m pip install --no-cache-dir "rendercv[full]" --break-system-packages
 
 # Verify installations
 RUN python3 -m rendercv --version && pnpm --version
