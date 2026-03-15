@@ -29,14 +29,13 @@ RUN python3 -m rendercv --version && pnpm --version
 WORKDIR /app
 
 # Copy dependency files first
-# Using explicit filenames to prevent any "Reading" issues
 COPY package.json pnpm-lock.yaml ./
-
-# Install Node.js dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the application
-COPY . .
+# Copy specific source and config files
+COPY src ./src
+COPY prisma ./prisma
+COPY tsconfig.json tsconfig.build.json nest-cli.json ./
 
 # Generate Prisma client
 RUN npx prisma generate
