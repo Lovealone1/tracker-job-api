@@ -2,7 +2,11 @@ node_modules
 dist
 .env
 .git
+.github
 .gitignore
+.dockerignore
+Dockerfile
+README.md
 *.md
 pnpm-debug.log
 npm-debug.log
@@ -13,3 +17,6 @@ test
 .agents
 brain
 generated
+.vscode
+.idea
+.prisma
