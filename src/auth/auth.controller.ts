@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, Req, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -20,6 +21,15 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user via Supabase' })
+  @ApiResponse({ status: 201, description: 'User successfully registered. Please verify your email.' })
+  @ApiResponse({ status: 400, description: 'Invalid input or user already exists' })
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   @Public()

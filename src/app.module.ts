@@ -9,6 +9,7 @@ import { ResumeVariantsModule } from './modules/resume-variants/resume-variants.
 import { MailModule } from './modules/mail/mail.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { UsersModule } from './modules/users/users.module';
+import { ProfileModule } from './modules/profile/profile.module';
 import { LoggerModule } from './common/logger/logger.module';
 
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -31,6 +32,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     MailModule,
     RemindersModule,
     UsersModule,
+    ProfileModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',
