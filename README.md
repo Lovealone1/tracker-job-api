@@ -1,98 +1,83 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Job Tracker API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A robust, enterprise-grade backend ecosystem built with **NestJS 11**, designed to power the Job Tracker application. This API handles everything from job application management to advanced LaTeX resume rendering and automated notifications.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Core Technologies
+- **Framework**: [NestJS](https://nestjs.com/) (Version 11)
+- **Database**: PostgreSQL with [Prisma ORM](https://www.prisma.io/)
+- **Authentication**: JWT with Passport.js strategy
+- **Resume Engine**: Python 3.x with **RenderCV[full]** (LaTeX support)
+- **Email Service**: Resend API integration (AES-256 encrypted keys)
+- **Storage**: @aws-sdk (S3-compatible) with Supabase Storage integration
+- **Documentation**: Swagger/OpenAPI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Key Features
 
-```bash
-$ pnpm install
-```
+### Smart Resume Rendering
+- **Dual-Runtime**: Seamlessly executes Python-based RenderCV CLI tasks from within the Node.js environment.
+- **LaTeX Quality**: Generates professional-grade PDF resumes with high-fidelity PNG previews.
 
-## Compile and run the project
+### Automated Lifecycle
+- **Interview Monitoring**: Integrated cron jobs that track upcoming interviews.
+- **Automated Notifications**: Sends smart email reminders via Resend to ensure you never miss a career opportunity.
 
-```bash
-# development
-$ pnpm run start
+### Security & Reliability
+- **Vault Encryption**: Industry-standard AES-256 encryption for external service API keys.
+- **Standardized DTOs**: Strict request validation and transformation using class-validator and class-transformer.
+- **Detailed Logging**: Structured JSON logging for production environments and human-readable logging for development.
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
+---
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Optimized for **Railway** deployment using a custom multi-runtime Docker environment:
+- **Base Image**: `node:22-bullseye`
+- **Extra Runtime**: Python 3 installer & `rendercv[full]`
+- **Sync**: Automated Prisma client generation during the build lifecycle.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+## Getting Started
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Prerequisites
+- Node.js 22+
+- Pnpm 9+
+- Python 3.12+ (for local resume rendering)
 
-## Resources
+### Local Development
 
-Check out a few resources that may come in handy when working with NestJS:
+1. **Install Dependencies**:
+   ```bash
+   pnpm install
+   ```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+2. **Environment Setup**:
+   Configure your `.env` following the provided template (at least `DATABASE_URL` and `SUPABASE_*` configs).
 
-## Support
+3. **Generate Client**:
+   ```bash
+   npx prisma generate
+   ```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+4. **Run Application**:
+   ```bash
+   # development
+   pnpm run start:dev
 
-## Stay in touch
+   # production
+   pnpm run start:prod
+   ```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+5. **Swagger Documentation**:
+   Access the interactive API docs at `http://localhost:3001/api/docs`
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## GitHub About Description
+> "Advanced NestJS 11 backend for job application tracking. Features integrated Python RenderCV engine for LaTeX resumes, automated interview reminders, and S3-compatible cloud storage."
+
+---
