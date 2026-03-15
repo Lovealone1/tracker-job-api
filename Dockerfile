@@ -20,7 +20,7 @@ RUN npm install -g pnpm
 
 # Install RenderCV with full features
 # Using python3 -m pip is more robust in some environments
-RUN python3 -m pip install --no-cache-dir "rendercv[full]" --break-system-packages
+RUN python3 -m pip install --no-cache-dir "rendercv[full]"
 
 # Verify installations
 RUN python3 -m rendercv --version && pnpm --version
