@@ -111,7 +111,7 @@ model Profile {
   email     String  @unique
   role      Role    @default(USER)
   enabled   Boolean @default(true)
-  document  String?
+  resend_api_key String?
   firstName String?
   lastName  String?
 

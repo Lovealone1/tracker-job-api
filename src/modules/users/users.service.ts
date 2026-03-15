@@ -14,7 +14,7 @@ export class UsersService {
     private configService: ConfigService,
   ) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseServiceRole = this.configService.get<string>('SUPABASE_SERVICE_ROLE');
+    const supabaseServiceRole = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
 
     if (supabaseUrl && supabaseServiceRole) {
       this.supabaseAdmin = createClient(supabaseUrl, supabaseServiceRole, {
