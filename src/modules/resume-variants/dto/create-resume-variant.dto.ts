@@ -145,4 +145,13 @@ export class CreateResumeVariantDto {
   @IsString()
   @IsOptional()
   template?: string;
+
+  @ApiPropertyOptional({
+    description: 'Language of the resume variant (en, es)',
+    example: 'en',
+    default: 'en',
+  })
+  @IsString()
+  @IsOptional()
+  language?: string;
 }

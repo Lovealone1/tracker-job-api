@@ -58,4 +58,8 @@ export class ResumeSummaryResponseDto {
   @Expose()
   @ApiPropertyOptional({ description: 'Custom sections' })
   others?: Record<string, any>;
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Language of the resume (en, es)', example: 'en' })
+  language?: string;
 }

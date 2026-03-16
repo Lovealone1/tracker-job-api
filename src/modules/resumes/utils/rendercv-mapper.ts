@@ -30,61 +30,98 @@ export function mapResumeToRenderCV(resume: any): any {
       phone: personal.phone || undefined,
       website: personal.website?.startsWith('http') ? personal.website : undefined,
       social_networks: socialNetworks.length > 0 ? socialNetworks : undefined,
-      sections: {
-        summary: resume.summary?.trim() ? [resume.summary.trim()] : undefined,
-        education: resume.education
-          ?.filter((edu: any) => edu.institution?.trim())
-          ?.map((edu: any) => ({
-            institution: edu.institution?.trim() || 'Unnamed Institution',
-            area: edu.fieldOfStudy?.trim() || undefined,
-            degree: edu.degree?.trim() || undefined,
-            start_date: edu.startDate?.trim() || undefined,
-            end_date: edu.endDate?.trim() || undefined,
-            location: edu.location?.trim() || undefined,
-            summary: edu.description?.trim() || undefined,
-          })),
-        experience: resume.experience
-          ?.filter((exp: any) => exp.company?.trim() || exp.role?.trim())
-          ?.map((exp: any) => ({
-            company: exp.company?.trim() || 'Unnamed Company',
-            position: exp.role?.trim() || 'Position',
-            location: exp.location?.trim() || undefined,
-            start_date: exp.startDate?.trim() || undefined,
-            end_date: (exp.endDate?.trim() || (exp.current ? 'present' : undefined)) || undefined,
-            summary: (exp.summary?.trim() || exp.description?.trim()) || undefined,
-            highlights: (() => {
-              const highlightsArr = Array.isArray(exp.highlights) ? exp.highlights : 
-                                  Array.isArray(exp.achievements) ? exp.achievements : [];
-              
-              let items: string[] = [];
-              if (highlightsArr.length > 0) {
-                items = highlightsArr.map((s: any) => String(s).trim());
-              } else {
-                const achievementsStr = exp.achievements || exp.highlights || '';
-                if (typeof achievementsStr === 'string' && achievementsStr.trim()) {
-                  items = achievementsStr.split('\n').map((s: string) => s.trim()).filter((s: string) => s !== '');
-                }
-              }
+      sections: (() => {
+        const sections: any = {};
+        const lang = resume.language === 'es' ? 'es' : 'en';
+        
+        // Define titles based on language
+        const titles = {
+          en: {
+            summary: 'Summary',
+            education: 'Education',
+            experience: 'Experience',
+            projects: 'Projects',
+            skills: 'Skills',
+          },
+          es: {
+            summary: 'Resumen',
+            education: 'Educación',
+            experience: 'Experiencia',
+            projects: 'Proyectos',
+            skills: 'Habilidades técnicas',
+          }
+        };
 
-              // Strip manual bullet points to avoid double bullets in RenderCV
-              return items.map(item => item.replace(/^[•\-\*\s]+/, '').trim()).filter(item => item !== '');
-            })(),
-          })),
-        projects: resume.projects
-          ?.filter((proj: any) => proj.name?.trim())
-          ?.map((proj: any) => ({
-            name: proj.name?.trim() || 'Unnamed Project',
-            location: undefined,
-            start_date: undefined,
-            end_date: undefined,
-            summary: proj.description?.trim() || undefined,
-            highlights: proj.technologies ? [`Built with: ${proj.technologies.join(', ')}`] : [],
-          })),
-        skills: resume.skills ? Object.entries(resume.skills).map(([category, items]) => ({
-          label: category,
-          details: Array.isArray(items) ? items.join(', ') : String(items),
-        })) : undefined,
-      },
+        const t = titles[lang];
+
+        if (resume.summary?.trim()) {
+          sections[t.summary] = [resume.summary.trim()];
+        }
+
+        if (resume.education?.length > 0) {
+          sections[t.education] = resume.education
+            ?.filter((edu: any) => edu.institution?.trim())
+            ?.map((edu: any) => ({
+              institution: edu.institution?.trim() || 'Unnamed Institution',
+              area: edu.fieldOfStudy?.trim() || undefined,
+              degree: edu.degree?.trim() || undefined,
+              start_date: edu.startDate?.trim() || undefined,
+              end_date: edu.endDate?.trim() || undefined,
+              location: edu.location?.trim() || undefined,
+              summary: edu.description?.trim() || undefined,
+            }));
+        }
+
+        if (resume.experience?.length > 0) {
+          sections[t.experience] = resume.experience
+            ?.filter((exp: any) => exp.company?.trim() || exp.role?.trim())
+            ?.map((exp: any) => ({
+              company: exp.company?.trim() || 'Unnamed Company',
+              position: exp.role?.trim() || 'Position',
+              location: exp.location?.trim() || undefined,
+              start_date: exp.startDate?.trim() || undefined,
+              end_date: (exp.endDate?.trim() || (exp.current ? 'present' : undefined)) || undefined,
+              summary: (exp.summary?.trim() || exp.description?.trim()) || undefined,
+              highlights: (() => {
+                const highlightsArr = Array.isArray(exp.highlights) ? exp.highlights : 
+                                    Array.isArray(exp.achievements) ? exp.achievements : [];
+                
+                let items: string[] = [];
+                if (highlightsArr.length > 0) {
+                  items = highlightsArr.map((s: any) => String(s).trim());
+                } else {
+                  const achievementsStr = exp.achievements || exp.highlights || '';
+                  if (typeof achievementsStr === 'string' && achievementsStr.trim()) {
+                    items = achievementsStr.split('\n').map((s: string) => s.trim()).filter((s: string) => s !== '');
+                  }
+                }
+                return items.map(item => item.replace(/^[•\-\*\s]+/, '').trim()).filter(item => item !== '');
+              })(),
+            }));
+        }
+
+        if (resume.projects?.length > 0) {
+          sections[t.projects] = resume.projects
+            ?.filter((proj: any) => proj.name?.trim())
+            ?.map((proj: any) => ({
+              name: proj.name?.trim() || 'Unnamed Project',
+              location: undefined,
+              start_date: undefined,
+              end_date: undefined,
+              summary: proj.description?.trim() || undefined,
+              highlights: proj.technologies ? [`Built with: ${proj.technologies.join(', ')}`] : [],
+            }));
+        }
+
+        if (resume.skills && Object.keys(resume.skills).length > 0) {
+          sections[t.skills] = Object.entries(resume.skills).map(([category, items]) => ({
+            label: category,
+            details: Array.isArray(items) ? items.join(', ') : String(items),
+          }));
+        }
+
+        return sections;
+      })(),
     },
     design: {
       theme: (() => {
@@ -97,6 +134,9 @@ export function mapResumeToRenderCV(resume: any): any {
         if (theme.includes('engineering')) return 'engineeringresumes';
         return 'classic';
       })(),
+    },
+    locale: {
+      language: resume.language === 'es' ? 'spanish' : 'english',
     },
   };
 }

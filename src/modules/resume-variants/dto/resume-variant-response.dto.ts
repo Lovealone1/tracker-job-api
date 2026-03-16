@@ -82,4 +82,8 @@ export class ResumeVariantResponseDto {
   @Expose()
   @ApiProperty()
   updatedAt: Date;
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Language of the resume variant (en, es)', example: 'en' })
+  language?: string;
 }
