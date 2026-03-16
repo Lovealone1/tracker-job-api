@@ -153,6 +153,7 @@ model Resume {
   projects     Json?
   skills       Json?
   others       Json?
+  language     String  @default("en")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -180,6 +181,7 @@ model ResumeVariant {
   projects     Json?
   skills       Json?
   others       Json?
+  language     String  @default("en")
 
   // Novedades para Variante
   modifications   Json? // Log de las modificaciones hechas por IA (ej. en experience)

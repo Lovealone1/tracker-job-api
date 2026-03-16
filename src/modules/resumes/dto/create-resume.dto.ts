@@ -96,4 +96,13 @@ export class CreateResumeDto {
   @IsObject()
   @IsOptional()
   others?: Record<string, any>;
+
+  @ApiPropertyOptional({
+    description: 'Language for the resume (en, es)',
+    example: 'en',
+    default: 'en',
+  })
+  @IsString()
+  @IsOptional()
+  language?: string;
 }
