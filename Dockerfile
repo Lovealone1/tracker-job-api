@@ -1,29 +1,26 @@
-# Use Node.js 22 Bookworm (Debian 12) to get Python 3.11+
-FROM node:22-bookworm
+# Use Python 3.12 Bookworm as base to satisfy RenderCV v2.7 requirements
+FROM python:3.12-bookworm
 
-# Install Python, LaTeX, and essential build tools
+# Install Node.js 22, LaTeX, and essential build tools
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    python-is-python3 \
+    curl \
     build-essential \
     texlive-latex-recommended \
     texlive-fonts-recommended \
     texlive-latex-extra \
     latexmk \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm globally
 RUN npm install -g pnpm
 
 # Install RenderCV with full features (v2.7)
-# Debian 12 requires --break-system-packages or a venv for system-wide pip
-RUN python3 -m pip install --no-cache-dir "rendercv[full]==2.7" --break-system-packages
+RUN pip install --no-cache-dir "rendercv[full]==2.7"
 
 # Verify installations
-RUN python3 -m rendercv --version && pnpm --version
+RUN python3 -m rendercv --version && node --version && pnpm --version
 
 # Set working directory
 WORKDIR /app
