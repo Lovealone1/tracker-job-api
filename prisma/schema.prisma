@@ -152,6 +152,11 @@ model Resume {
   experience   Json
   projects     Json?
   skills       Json?
+  publications Json?
+  certifications Json?
+  honors       Json?
+  patents      Json?
+  talks        Json?
   others       Json?
   language     String  @default("en")
 
@@ -180,6 +185,11 @@ model ResumeVariant {
   experience   Json
   projects     Json?
   skills       Json?
+  publications Json?
+  certifications Json?
+  honors       Json?
+  patents      Json?
+  talks        Json?
   others       Json?
   language     String  @default("en")
 

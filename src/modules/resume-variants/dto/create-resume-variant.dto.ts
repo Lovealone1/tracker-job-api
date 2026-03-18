@@ -87,6 +87,41 @@ export class CreateResumeVariantDto {
   skills?: Record<string, any>;
 
   @ApiPropertyOptional({
+    description: 'Overridden publications',
+  })
+  @IsArray()
+  @IsOptional()
+  publications?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Overridden certifications',
+  })
+  @IsArray()
+  @IsOptional()
+  certifications?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Overridden honors',
+  })
+  @IsArray()
+  @IsOptional()
+  honors?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Overridden patents',
+  })
+  @IsArray()
+  @IsOptional()
+  patents?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Overridden talks',
+  })
+  @IsArray()
+  @IsOptional()
+  talks?: any[];
+
+  @ApiPropertyOptional({
     description: 'Overridden custom sections',
   })
   @IsObject()

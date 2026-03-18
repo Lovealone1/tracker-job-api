@@ -45,6 +45,26 @@ export class ResumeVariantResponseDto {
 
   @Expose()
   @ApiPropertyOptional()
+  publications?: any[];
+
+  @Expose()
+  @ApiPropertyOptional()
+  certifications?: any[];
+
+  @Expose()
+  @ApiPropertyOptional()
+  honors?: any[];
+
+  @Expose()
+  @ApiPropertyOptional()
+  patents?: any[];
+
+  @Expose()
+  @ApiPropertyOptional()
+  talks?: any[];
+
+  @Expose()
+  @ApiPropertyOptional()
   others?: Record<string, any>;
 
   @Expose()

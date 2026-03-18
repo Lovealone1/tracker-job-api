@@ -90,8 +90,48 @@ export class CreateResumeDto {
   skills?: Record<string, any>;
 
   @ApiPropertyOptional({
+    description: 'Array of publications',
+    example: [{ title: 'Paper Title', authors: 'John Doe', doi: '10.1234/5678', journal: 'Nature' }],
+  })
+  @IsArray()
+  @IsOptional()
+  publications?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Array of certifications',
+    example: [{ name: 'AWS Certified', date: '2023-01-01', issuer: 'Amazon' }],
+  })
+  @IsArray()
+  @IsOptional()
+  certifications?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Array of honors and awards',
+    example: [{ name: 'Best Developer', date: '2022-12-31', issuer: 'Tech Awards' }],
+  })
+  @IsArray()
+  @IsOptional()
+  honors?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Array of patents',
+    example: [{ title: 'Cool Invention', date: '2021-05-15', issuer: 'USPTO' }],
+  })
+  @IsArray()
+  @IsOptional()
+  patents?: any[];
+
+  @ApiPropertyOptional({
+    description: 'Array of invited talks',
+    example: [{ title: 'Future of AI', date: '2024-02-10', venue: 'Googler Conf' }],
+  })
+  @IsArray()
+  @IsOptional()
+  talks?: any[];
+
+  @ApiPropertyOptional({
     description: 'Other custom sections in JSON format',
-    example: { certifications: ['AWS Certified Developer'] },
+    example: { custom: 'data' },
   })
   @IsObject()
   @IsOptional()
