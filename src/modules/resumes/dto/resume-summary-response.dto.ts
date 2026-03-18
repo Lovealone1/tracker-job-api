@@ -56,6 +56,26 @@ export class ResumeSummaryResponseDto {
   skills?: Record<string, any>;
 
   @Expose()
+  @ApiPropertyOptional({ description: 'Publications' })
+  publications?: any[];
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Certifications' })
+  certifications?: any[];
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Honors and Awards' })
+  honors?: any[];
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Patents' })
+  patents?: any[];
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Invited Talks' })
+  talks?: any[];
+
+  @Expose()
   @ApiPropertyOptional({ description: 'Custom sections' })
   others?: Record<string, any>;
 

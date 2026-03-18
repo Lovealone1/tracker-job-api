@@ -35,13 +35,18 @@ export function mapResumeToRenderCV(resume: any): any {
         const lang = resume.language === 'es' ? 'es' : 'en';
         
         // Define titles based on language
-        const titles = {
+        const titles: any = {
           en: {
             summary: 'Summary',
             education: 'Education',
             experience: 'Experience',
             projects: 'Projects',
             skills: 'Skills',
+            publications: 'Publications',
+            certifications: 'Certifications',
+            honors: 'Honors and Awards',
+            patents: 'Patents',
+            talks: 'Invited Talks',
           },
           es: {
             summary: 'Resumen',
@@ -49,6 +54,11 @@ export function mapResumeToRenderCV(resume: any): any {
             experience: 'Experiencia',
             projects: 'Proyectos',
             skills: 'Habilidades técnicas',
+            publications: 'Publicaciones',
+            certifications: 'Certificaciones',
+            honors: 'Honores y Premios',
+            patents: 'Patentes',
+            talks: 'Charlas Invitadas',
           }
         };
 
@@ -105,11 +115,82 @@ export function mapResumeToRenderCV(resume: any): any {
             ?.filter((proj: any) => proj.name?.trim())
             ?.map((proj: any) => ({
               name: proj.name?.trim() || 'Unnamed Project',
-              location: undefined,
-              start_date: undefined,
-              end_date: undefined,
+              location: proj.location?.trim() || undefined,
+              start_date: proj.startDate?.trim() || undefined,
+              end_date: (proj.endDate?.trim() || (proj.current ? 'present' : undefined)) || undefined,
               summary: proj.description?.trim() || undefined,
-              highlights: proj.technologies ? [`Built with: ${proj.technologies.join(', ')}`] : [],
+              highlights: (() => {
+                const highlightsArr = Array.isArray(proj.highlights) ? proj.highlights : [];
+                let items: string[] = [];
+                if (highlightsArr.length > 0) {
+                  items = highlightsArr.map((s: any) => String(s).trim());
+                } else if (proj.technologies?.length > 0) {
+                   items = [`Built with: ${proj.technologies.join(', ')}`];
+                }
+                return items.map(item => item.replace(/^[•\-\*\s]+/, '').trim()).filter(item => item !== '');
+              })(),
+            }));
+        }
+
+        if (resume.publications?.length > 0) {
+          sections[t.publications] = resume.publications
+            ?.filter((pub: any) => pub.title?.trim())
+            ?.map((pub: any) => ({
+              title: pub.title?.trim() || 'Untitled Publication',
+              authors: Array.isArray(pub.authors) ? pub.authors : (pub.authors ? [pub.authors] : []),
+              doi: pub.doi?.trim() || undefined,
+              journal: pub.journal?.trim() || pub.conference?.trim() || undefined,
+              date: pub.date?.trim() || undefined,
+              summary: pub.description?.trim() || undefined,
+            }));
+        }
+
+        if (resume.certifications?.length > 0) {
+          sections[t.certifications] = resume.certifications
+            ?.filter((cert: any) => cert.name?.trim())
+            ?.map((cert: any) => {
+              const name = cert.name?.trim() || 'Unnamed Certification';
+              const issuer = cert.issuer?.trim();
+              const description = cert.description?.trim();
+              
+              return {
+                name: name,
+                date: cert.date?.trim() || undefined,
+                summary: issuer ? (description ? `${issuer}\n\n${description}` : issuer) : description,
+              };
+            });
+        }
+
+        if (resume.honors?.length > 0) {
+          sections[t.honors] = resume.honors
+            ?.filter((honor: any) => honor.name?.trim())
+            ?.map((honor: any) => ({
+              name: honor.name?.trim() || 'Unnamed Honor',
+              issuer: honor.issuer?.trim() || undefined,
+              date: honor.date?.trim() || undefined,
+              summary: honor.description?.trim() || undefined,
+            }));
+        }
+
+        if (resume.patents?.length > 0) {
+          sections[t.patents] = resume.patents
+            ?.filter((patent: any) => patent.title?.trim())
+            ?.map((patent: any) => ({
+              title: patent.title?.trim() || 'Unnamed Patent',
+              issuer: patent.issuer?.trim() || undefined,
+              date: patent.date?.trim() || undefined,
+              summary: patent.description?.trim() || undefined,
+            }));
+        }
+
+        if (resume.talks?.length > 0) {
+          sections[t.talks] = resume.talks
+            ?.filter((talk: any) => talk.title?.trim())
+            ?.map((talk: any) => ({
+              title: talk.title?.trim() || 'Untitled Talk',
+              venue: talk.venue?.trim() || talk.location?.trim() || undefined,
+              date: talk.date?.trim() || undefined,
+              summary: talk.description?.trim() || undefined,
             }));
         }
 
