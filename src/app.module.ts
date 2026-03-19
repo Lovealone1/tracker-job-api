@@ -10,6 +10,8 @@ import { MailModule } from './modules/mail/mail.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { UsersModule } from './modules/users/users.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { WorkspaceProjectsModule } from './modules/workspace-projects/workspace-projects.module';
+import { WorkspaceTasksModule } from './modules/workspace-tasks/workspace-tasks.module';
 import { LoggerModule } from './common/logger/logger.module';
 
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -33,6 +35,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     RemindersModule,
     UsersModule,
     ProfileModule,
+    WorkspaceProjectsModule,
+    WorkspaceTasksModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

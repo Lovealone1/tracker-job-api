@@ -102,18 +102,53 @@ enum ReminderStatus {
   CANCELED
 }
 
+enum WorkspaceProjectType {
+  PORTFOLIO
+  TECHNICAL_TEST
+  FREELANCE
+  STUDY
+  PERSONAL
+  INTERVIEW_PREP
+  OTHER
+}
+
+enum WorkspaceProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum WorkspaceTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WorkspaceTaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  REVIEW
+  DONE
+  CANCELLED
+}
+
 // -----------------------------------------------------------------------------
 // MODELS
 // -----------------------------------------------------------------------------
 
 model Profile {
-  id        String  @id @default(uuid())
-  email     String  @unique
-  role      Role    @default(USER)
-  enabled   Boolean @default(true)
+  id             String  @id @default(uuid())
+  email          String  @unique
+  role           Role    @default(USER)
+  enabled        Boolean @default(true)
   resend_api_key String?
-  firstName String?
-  lastName  String?
+  firstName      String?
+  lastName       String?
 
   // Opcionales
   country     String?
@@ -127,11 +162,13 @@ model Profile {
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  resumes         Resume[]
-  resumeVariants  ResumeVariant[]
-  jobApplications JobApplication[]
-  interviews      Interview[]
-  reminders       Reminder[]
+  resumes           Resume[]
+  resumeVariants    ResumeVariant[]
+  jobApplications   JobApplication[]
+  interviews        Interview[]
+  reminders         Reminder[]
+  workspaceProjects WorkspaceProject[]
+  workspaceTasks    WorkspaceTask[]
 
   @@index([email])
 }
@@ -145,20 +182,20 @@ model Resume {
   isDefault Boolean @default(false)
 
   // Estructura Base del CV
-  resumeName   String
-  personalInfo Json
-  summary      String? @db.Text
-  education    Json
-  experience   Json
-  projects     Json?
-  skills       Json?
-  publications Json?
+  resumeName     String
+  personalInfo   Json
+  summary        String? @db.Text
+  education      Json
+  experience     Json
+  projects       Json?
+  skills         Json?
+  publications   Json?
   certifications Json?
-  honors       Json?
-  patents      Json?
-  talks        Json?
-  others       Json?
-  language     String  @default("en")
+  honors         Json?
+  patents        Json?
+  talks          Json?
+  others         Json?
+  language       String  @default("en")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -178,20 +215,20 @@ model ResumeVariant {
   template String?
 
   // Copia de la Estructura Base del CV (Modificable)
-  resumeName   String
-  personalInfo Json
-  summary      String? @db.Text
-  education    Json
-  experience   Json
-  projects     Json?
-  skills       Json?
-  publications Json?
+  resumeName     String
+  personalInfo   Json
+  summary        String? @db.Text
+  education      Json
+  experience     Json
+  projects       Json?
+  skills         Json?
+  publications   Json?
   certifications Json?
-  honors       Json?
-  patents      Json?
-  talks        Json?
-  others       Json?
-  language     String  @default("en")
+  honors         Json?
+  patents        Json?
+  talks          Json?
+  others         Json?
+  language       String  @default("en")
 
   // Novedades para Variante
   modifications   Json? // Log de las modificaciones hechas por IA (ej. en experience)
@@ -319,4 +356,82 @@ model Reminder {
   @@index([profileId])
   @@index([dueAt]) // Útil para traer recordatorios próximos
   @@index([status, dueAt]) // Útil para traer pendientes próximos
+}
+
+model WorkspaceProject {
+  id        String @id @default(uuid())
+  profileId String
+
+  name     String
+  slug     String?
+  type     WorkspaceProjectType   @default(PERSONAL)
+  status   WorkspaceProjectStatus @default(PLANNING)
+  priority WorkspaceTaskPriority  @default(MEDIUM)
+
+  description String? @db.Text
+  goal        String? @db.Text
+  outcome     String? @db.Text
+
+  deliverables String[]
+  stack        String[]
+
+  repositoryUrl String?
+  liveUrl       String?
+  demoUrl       String?
+
+  notes String? @db.Text
+
+  startDate   DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  visibility String @default("PRIVATE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tasks   WorkspaceTask[]
+
+  @@unique([profileId, slug])
+  @@index([profileId])
+  @@index([status])
+  @@index([type])
+}
+
+model WorkspaceTask {
+  id        String @id @default(uuid())
+  projectId String
+  profileId String
+
+  customTaskId String
+  title        String
+
+  phase    String?
+  status   WorkspaceTaskStatus   @default(TODO)
+  priority WorkspaceTaskPriority @default(MEDIUM)
+
+  description  String?  @db.Text
+  deliverables String[]
+  outcome      String?  @db.Text
+  notes        String?  @db.Text
+
+  startDate   DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  orderIndex Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project WorkspaceProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  profile Profile          @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, customTaskId])
+  @@index([projectId])
+  @@index([profileId])
+  @@index([status])
+  @@index([priority])
+  @@index([phase])
 }
