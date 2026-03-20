@@ -60,4 +60,12 @@ export class WorkspaceProjectsService {
     }
     return { success: true };
   }
+
+  async findPublicBySlug(username: string, slug: string) {
+    const project = await this.workspaceProjectsRepository.findPublicBySlug(username, slug);
+    if (!project) {
+      throw new NotFoundException(`Project ${slug} not found for user ${username}`);
+    }
+    return project;
+  }
 }

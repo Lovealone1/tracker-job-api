@@ -14,6 +14,7 @@ import { plainToInstance } from 'class-transformer';
 import { Throttle } from '@nestjs/throttler';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { PaginatedWorkspaceProjectResponseDto } from './dto/paginated-workspace-project-response.dto';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @ApiTags('Workspace Projects')
 @ApiBearerAuth()
@@ -80,5 +81,18 @@ export class WorkspaceProjectsController {
   @ApiResponse({ status: 404, description: 'Workspace project not found.' })
   async remove(@CurrentUser() user: UserPayload, @Param('id') id: string) {
     return this.workspaceProjectsService.remove(user, id);
+  }
+
+  @Public()
+  @Get('public/:username/:slug')
+  @ApiOperation({ summary: 'Get a public workspace project by username and slug' })
+  @ApiResponse({ status: 200, description: 'Return the public workspace project.', type: WorkspaceProjectResponseDto })
+  @ApiResponse({ status: 404, description: 'Workspace project not found.' })
+  async findPublicBySlug(
+    @Param('username') username: string,
+    @Param('slug') slug: string
+  ): Promise<WorkspaceProjectResponseDto> {
+    const project = await this.workspaceProjectsService.findPublicBySlug(username, slug);
+    return plainToInstance(WorkspaceProjectResponseDto, project);
   }
 }
