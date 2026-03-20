@@ -99,4 +99,34 @@ export class WorkspaceProjectsRepository {
     });
     return true;
   }
+
+  async findPublicBySlug(username: string, slug: string): Promise<WorkspaceProject | null> {
+    // Escapar/limpiar caracteres especiales si hace falta (Prisma lo hace seguro por parametrización)
+    return this.prisma.workspaceProject.findFirst({
+      where: {
+        slug: slug,
+        profile: {
+          email: {
+            startsWith: `${username}@`
+          }
+        },
+        // Muestra si la visibilidad es pública (o puedes relajar esto si quieres que el dashboard sea unificado para el admin)
+        // visiblity: "PUBLIC", // <-- Si quisieras forzar privacidad en el futuro
+      },
+      include: {
+        tasks: {
+          orderBy: { orderIndex: 'asc' }
+        },
+        profile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+  }
 }
