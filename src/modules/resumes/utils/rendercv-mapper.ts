@@ -28,9 +28,9 @@ export function mapResumeToRenderCV(resume: any): any {
         if (!resume.resumeName) return 'Your Name';
         const lines = resume.resumeName.split('\n');
         if (lines.length <= 1) return resume.resumeName;
-        // Reemplazamos los espacios normales por espacios inseparables en cada renglón,
-        // y unimos los renglones con un espacio normal para que RenderCV se vea forzado a saltar ahí.
-        return lines.map((line: string) => line.replace(/ /g, '\u00A0')).join(' ');
+        // Reemplazamos cualquier espacio (incluyendo los de teclados internacionales) por espacios inseparables en cada renglón,
+        // y unimos los renglones con un espacio normal y un zero-width space para forzar el quiebre.
+        return lines.map((line: string) => line.replace(/[^\S\n]/g, '\u00A0')).join('\u200B ');
       })(),
       location: personal.location || undefined,
       email: personal.email?.includes('@') ? personal.email : undefined,
@@ -222,9 +222,22 @@ export function mapResumeToRenderCV(resume: any): any {
         if (theme.includes('engineering')) return 'engineeringresumes';
         return 'classic';
       })(),
+      // Override templates for Spanish translation if using sb2nov
+      ...(resume.language === 'es' ? {
+        templates: {
+          education_entry: {
+            main_column: "**INSTITUTION**\n*DEGREE* *en* *AREA*\nSUMMARY\nHIGHLIGHTS"
+          }
+        }
+      } : {})
     },
     locale: {
       language: resume.language === 'es' ? 'spanish' : 'english',
+      ...(resume.language === 'es' ? {
+        phrases: {
+          degree_with_area: "DEGREE en AREA"
+        }
+      } : {})
     },
   };
 }
