@@ -27,10 +27,22 @@ export function mapResumeToRenderCV(resume: any): any {
       name: (() => {
         if (!resume.resumeName) return 'Your Name';
         const lines = resume.resumeName.split('\n');
-        if (lines.length <= 1) return resume.resumeName;
-        // Reemplazamos cualquier espacio (incluyendo los de teclados internacionales) por espacios inseparables en cada renglón,
-        // y unimos los renglones con un espacio normal y un zero-width space para forzar el quiebre.
-        return lines.map((line: string) => line.replace(/[^\S\n]/g, '\u00A0')).join('\u200B ');
+        
+        const processLine = (line: string) => {
+          // Reemplazamos cualquier tipo de espacio por espacio inseparable
+          const words = line.trim().split(/[^\S\n]+/);
+          return words.map(word => {
+            // Insertamos un Word Joiner (\u2060) entre cada letra para que RenderCV/Typst 
+            // no pueda aplicar silabeo (hyphenation) dentro de la palabra.
+            return word.split('').join('\u2060');
+          }).join('\u00A0');
+        };
+
+        if (lines.length <= 1) return processLine(resume.resumeName);
+        
+        // Unimos los renglones con un espacio normal. Al ser los bloques internos "irrompibles",
+        // el motor se verá forzado a saltar de línea exactamente en este espacio.
+        return lines.map(processLine).join(' ');
       })(),
       location: personal.location || undefined,
       email: personal.email?.includes('@') ? personal.email : undefined,
