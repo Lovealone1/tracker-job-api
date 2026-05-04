@@ -24,7 +24,7 @@ export function mapResumeToRenderCV(resume: any): any {
 
   return {
     cv: {
-      name: resume.resumeName || 'Your Name',
+      name: resume.resumeName?.replace(/\n/g, '\\n') || 'Your Name',
       location: personal.location || undefined,
       email: personal.email?.includes('@') ? personal.email : undefined,
       phone: personal.phone || undefined,
