@@ -24,7 +24,14 @@ export function mapResumeToRenderCV(resume: any): any {
 
   return {
     cv: {
-      name: resume.resumeName?.replace(/\n/g, '\\n') || 'Your Name',
+      name: (() => {
+        if (!resume.resumeName) return 'Your Name';
+        const lines = resume.resumeName.split('\n');
+        if (lines.length <= 1) return resume.resumeName;
+        // Reemplazamos los espacios normales por espacios inseparables en cada renglón,
+        // y unimos los renglones con un espacio normal para que RenderCV se vea forzado a saltar ahí.
+        return lines.map((line: string) => line.replace(/ /g, '\u00A0')).join(' ');
+      })(),
       location: personal.location || undefined,
       email: personal.email?.includes('@') ? personal.email : undefined,
       phone: personal.phone || undefined,
