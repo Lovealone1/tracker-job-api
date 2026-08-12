@@ -27,7 +27,7 @@ WORKDIR /app
 
 # Copy dependency files first
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --config.enable-pre-post-scripts=true
 
 # Copy specific source and config files
 COPY src ./src
