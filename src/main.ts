@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType, LogLevel } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppLogger } from './common/logger/app.logger';
 
 async function bootstrap() {
@@ -23,6 +24,7 @@ async function bootstrap() {
   app.useLogger(appLogger);
 
   app.use(helmet());
+  app.use(cookieParser());
 
   app.enableCors({
     origin: process.env.FRONTEND_URL

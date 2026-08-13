@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
 import * as jwksRsa from 'jwks-rsa';
+import { ACCESS_TOKEN_COOKIE } from '../utils/auth-cookies';
 
 interface JwtPayload {
   sub: string;
@@ -9,13 +11,20 @@ interface JwtPayload {
   role: string;
 }
 
+/** Session tokens live in httpOnly cookies; the Bearer header stays as a fallback (Swagger, tests, API clients). */
+const fromAuthCookie = (req: Request): string | null =>
+  req?.cookies?.[ACCESS_TOKEN_COOKIE] ?? null;
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
 
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        fromAuthCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
 
       secretOrKeyProvider: jwksRsa.passportJwtSecret({
