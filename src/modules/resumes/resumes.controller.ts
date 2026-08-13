@@ -141,6 +141,7 @@ export class ResumesController {
   @Post(':id/render')
   @ApiOperation({ summary: 'Render the resume using RenderCV engine' })
   @ApiResponse({ status: 200, description: 'Resume rendered successfully' })
+  @ApiResponse({ status: 422, description: 'CV validation errors (dates, emails, URLs, required fields...) — structured payload' })
   async render(@CurrentUser() user: UserPayload, @Param('id') id: string) {
     const result = await this.renderingService.renderResume(user, id);
     return {
@@ -153,6 +154,8 @@ export class ResumesController {
 
   @Post('render-live/pdf')
   @ApiOperation({ summary: 'Generate PDF from current editor state' })
+  @ApiResponse({ status: 422, description: 'CV validation errors (dates, emails, URLs, required fields...) — structured payload' })
+  @ApiResponse({ status: 504, description: 'RenderCV timed out' })
   @Header('Content-Type', 'application/pdf')
   @Header('Content-Disposition', 'attachment; filename="resume.pdf"')
   async renderLivePdf(@CurrentUser() user: UserPayload, @Body() data: any) {
@@ -164,6 +167,7 @@ export class ResumesController {
 
   @Post('render-live/preview')
   @ApiOperation({ summary: 'Generate PNG preview from current editor state' })
+  @ApiResponse({ status: 422, description: 'CV validation errors (dates, emails, URLs, required fields...) — structured payload' })
   async renderLivePreview(
     @CurrentUser() user: UserPayload, 
     @Body() data: any,

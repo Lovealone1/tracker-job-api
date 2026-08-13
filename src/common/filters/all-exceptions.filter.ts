@@ -28,10 +28,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : null;
 
+    const isObjectResponse =
+      typeof errorResponse === 'object' && errorResponse !== null;
+
     const message =
       typeof errorResponse === 'string'
         ? errorResponse
-        : typeof errorResponse === 'object' && errorResponse !== null
+        : isObjectResponse
           ? (errorResponse as any).message ?? 'Internal server error'
           : 'Internal server error';
 
@@ -53,8 +56,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       ...(this.isProduction ? {} : { stack }),
     });
 
-    // Return sanitized error response to client
+    // Return sanitized error response to client.
+    // Structured HttpException payloads (e.g. RenderCV errors: code, errors[])
+    // pass through, but statusCode/message/timestamp/path always win.
     response.status(status).json({
+      ...(isObjectResponse ? errorResponse : {}),
       statusCode: status,
       message: this.isProduction && status >= 500 ? 'Internal server error' : message,
       timestamp: new Date().toISOString(),
