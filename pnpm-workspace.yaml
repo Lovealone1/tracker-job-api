@@ -1,0 +1,8 @@
+# pnpm settings (new home since pnpm v10.x — package.json "pnpm" field is no longer read)
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - bcrypt
+  - prisma
+  - unrs-resolver

@@ -26,7 +26,7 @@ RUN python3 -m rendercv --version && node --version && pnpm --version
 WORKDIR /app
 
 # Copy dependency files first
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --config.enable-pre-post-scripts=true
 
 # Copy specific source and config files
