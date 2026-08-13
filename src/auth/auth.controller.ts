@@ -1,12 +1,41 @@
-import { Controller, Post, Body, Get, Req, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Req,
+  Res,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { Request as ExpressRequest, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from './decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  PKCE_VERIFIER_COOKIE,
+  accessTokenCookieOptions,
+  refreshTokenCookieOptions,
+  pkceVerifierCookieOptions,
+  clearAccessTokenCookieOptions,
+  clearRefreshTokenCookieOptions,
+  clearPkceVerifierCookieOptions,
+} from './utils/auth-cookies';
+
+interface SupabaseSession {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+}
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -19,26 +48,83 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with email/password via Supabase' })
   @ApiResponse({ status: 200, description: 'JWT Token successfully obtained' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const session = await this.authService.login(loginDto);
+    this.setSessionCookies(res, session);
+    return session;
   }
 
   @Public()
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user via Supabase' })
-  @ApiResponse({ status: 201, description: 'User successfully registered. Please verify your email.' })
-  @ApiResponse({ status: 400, description: 'Invalid input or user already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Get('oauth/:provider')
+  @ApiOperation({
+    summary: 'Start OAuth sign-in / sign-up (google | github). Redirects to the provider consent screen.',
+  })
+  @ApiResponse({ status: 302, description: 'Redirect to the OAuth provider' })
+  @ApiResponse({ status: 400, description: 'Unsupported provider' })
+  oauth(@Param('provider') provider: string, @Res() res: Response) {
+    const { url, codeVerifier } = this.authService.buildOAuthAuthorizeUrl(provider);
+    res.cookie(PKCE_VERIFIER_COOKIE, codeVerifier, pkceVerifierCookieOptions());
+    return res.redirect(url);
+  }
+
+  @Public()
+  @Get('callback')
+  @ApiOperation({
+    summary: 'OAuth callback — exchanges the code, creates the profile on first sign-in, sets the session cookies and redirects to the frontend',
+  })
+  @ApiResponse({ status: 302, description: 'Redirect to the frontend' })
+  async oauthCallback(
+    @Query('code') code: string,
+    @Req() req: ExpressRequest,
+    @Res() res: Response,
+  ) {
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const codeVerifier = req.cookies?.[PKCE_VERIFIER_COOKIE];
+    res.clearCookie(PKCE_VERIFIER_COOKIE, clearPkceVerifierCookieOptions());
+
+    if (!code || !codeVerifier) {
+      return res.redirect(`${frontendUrl}/login?error=oauth`);
+    }
+
+    try {
+      const session = await this.authService.exchangeCodeForSession(code, codeVerifier);
+      this.setSessionCookies(res, session);
+      return res.redirect(`${frontendUrl}/dashboard`);
+    } catch {
+      return res.redirect(`${frontendUrl}/login?error=oauth`);
+    }
   }
 
   @Public()
   @Post('refresh')
-  @ApiOperation({ summary: 'Refresh JWT Token via Supabase' })
+  @ApiOperation({ summary: 'Refresh JWT Token via Supabase (reads the httpOnly refresh cookie)' })
   @ApiResponse({ status: 200, description: 'New JWT Token successfully obtained' })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE] ?? refreshTokenDto?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not provided');
+    }
+
+    const session = await this.authService.refreshToken(refreshToken);
+    this.setSessionCookies(res, session);
+    return session;
+  }
+
+  @Public()
+  @Post('logout')
+  @ApiOperation({ summary: 'Sign out — revokes the Supabase session and clears the auth cookies' })
+  @ApiResponse({ status: 200, description: 'Session closed' })
+  async logout(@Req() req: ExpressRequest, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(req.cookies?.[ACCESS_TOKEN_COOKIE]);
+    res.clearCookie(ACCESS_TOKEN_COOKIE, clearAccessTokenCookieOptions());
+    res.clearCookie(REFRESH_TOKEN_COOKIE, clearRefreshTokenCookieOptions());
+    return { success: true };
   }
 
   @Get('me')
@@ -49,5 +135,10 @@ export class AuthController {
   getProfile(@Request() req: any) {
     // req.user has { sub, email, role } decoded from the JWT by JwtStrategy
     return this.authService.getProfile(req.user.sub);
+  }
+
+  private setSessionCookies(res: Response, session: SupabaseSession) {
+    res.cookie(ACCESS_TOKEN_COOKIE, session.access_token, accessTokenCookieOptions(session.expires_in));
+    res.cookie(REFRESH_TOKEN_COOKIE, session.refresh_token, refreshTokenCookieOptions());
   }
 }
