@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install pnpm globally (pinned: pnpm v11 removed onlyBuiltDependencies in favor of allowBuilds)
+RUN npm install -g pnpm@11.21.0
 
 # Install RenderCV with full features (v2.7)
 RUN pip install --no-cache-dir "rendercv[full]==2.7"
