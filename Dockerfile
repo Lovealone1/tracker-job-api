@@ -32,7 +32,7 @@ RUN pnpm install --frozen-lockfile --config.enable-pre-post-scripts=true
 # Copy specific source and config files
 COPY src ./src
 COPY prisma ./prisma
-COPY tsconfig.json tsconfig.build.json nest-cli.json ./
+COPY tsconfig.json tsconfig.build.json nest-cli.json prisma.config.ts ./
 
 # Generate Prisma client
 RUN npx prisma generate
