@@ -1,8 +1,11 @@
-# pnpm settings (new home since pnpm v10.x — package.json "pnpm" field is no longer read)
-onlyBuiltDependencies:
-  - '@nestjs/core'
-  - '@prisma/engines'
-  - '@scarf/scarf'
-  - bcrypt
-  - prisma
-  - unrs-resolver
+# pnpm 11: onlyBuiltDependencies/neverBuiltDependencies/ignoredBuiltDependencies
+# fueron eliminados y fusionados en allowBuilds ({ nombre: true | false }).
+# Estas dependencias necesitan sus build scripts (bcrypt compila binding nativo,
+# prisma/@prisma/engines descargan engines, etc.)
+allowBuilds:
+  '@nestjs/core': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  bcrypt: true
+  prisma: true
+  unrs-resolver: true
