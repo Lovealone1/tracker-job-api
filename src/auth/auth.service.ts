@@ -5,6 +5,7 @@ import {
   HttpStatus,
   BadRequestException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { createHash, randomBytes } from 'crypto';
@@ -267,6 +268,14 @@ export class AuthService {
   }
 
   private apiPublicUrl(): string {
-    return process.env.API_PUBLIC_URL ?? `http://localhost:${process.env.PORT ?? 3001}`;
+    const url = process.env.API_PUBLIC_URL;
+    if (url) return url;
+    if (process.env.NODE_ENV === 'production') {
+      throw new InternalServerErrorException(
+        'API_PUBLIC_URL is not set. It must be the public URL of this API (e.g. https://api.example.com) ' +
+          'because it is used to build the OAuth callback URL.',
+      );
+    }
+    return `http://localhost:${process.env.PORT ?? 3001}`;
   }
 }

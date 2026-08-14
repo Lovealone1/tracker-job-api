@@ -15,6 +15,23 @@ async function bootstrap() {
     ? ['error', 'warn', 'log']
     : ['error', 'warn', 'log', 'debug', 'verbose'];
 
+  // Fail fast on misconfigured production deploys: these variables build the
+  // OAuth callback URL and the post-login redirect, so a missing/localhost
+  // value would silently send users to http://localhost in production.
+  if (isProduction) {
+    const misconfigured = ['API_PUBLIC_URL', 'FRONTEND_URL'].filter((key) => {
+      const value = process.env[key];
+      return !value || value.includes('localhost') || value.includes('127.0.0.1');
+    });
+    if (misconfigured.length > 0) {
+      throw new Error(
+        `Invalid production configuration: ${misconfigured.join(', ')} must be set to the public URLs ` +
+          '(not localhost). API_PUBLIC_URL is used to build the OAuth callback URL and FRONTEND_URL ' +
+          'for the post-login redirect.',
+      );
+    }
+  }
+
   const app = await NestFactory.create(AppModule, {
     logger: logLevels,
     bufferLogs: true,
