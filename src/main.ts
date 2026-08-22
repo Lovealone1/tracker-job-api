@@ -9,6 +9,14 @@ import { AppLogger } from './common/logger/app.logger';
 async function bootstrap() {
   const appLogger = new AppLogger('Bootstrap');
 
+  // Trim URL env vars: copy-pasting values into hosting dashboards often
+  // introduces stray whitespace, which silently breaks OAuth redirects (the
+  // redirect_to no longer matches the Supabase allowlist) and CORS.
+  for (const key of ['API_PUBLIC_URL', 'FRONTEND_URL', 'SUPABASE_URL']) {
+    const value = process.env[key];
+    if (value) process.env[key] = value.trim();
+  }
+
   // Configure log levels based on environment
   const isProduction = process.env.NODE_ENV === 'production';
   const logLevels: LogLevel[] = isProduction

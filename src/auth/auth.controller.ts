@@ -43,7 +43,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 requests per 15 minutes (auth block brute force)
+  @Throttle({ default: { limit: 15, ttl: 900000 } }) // 15 attempts per 15 minutes (auth brute force)
   @Post('token')
   @ApiOperation({ summary: 'Login with email/password via Supabase' })
   @ApiResponse({ status: 200, description: 'JWT Token successfully obtained' })
