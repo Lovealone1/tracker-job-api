@@ -1,4 +1,8 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -20,11 +24,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err, user, info) {
-    // You can throw an exception based on either "info" or "err" arguments
+  handleRequest<TUser = any>(err: any, user: any) {
     if (err || !user) {
-      throw err || new UnauthorizedException('Token de acceso inválido o no proporcionado. Asegúrate de incluir el Bearer token.');
+      // The session travels in the httpOnly cookie (jt_access_token); no
+      // Bearer header is ever sent by the frontend. Say so accurately.
+      throw (
+        err ||
+        new UnauthorizedException(
+          'Sesión no válida o expirada. Vuelve a iniciar sesión.',
+        )
+      );
     }
-    return user;
+    return user as TUser;
   }
 }
