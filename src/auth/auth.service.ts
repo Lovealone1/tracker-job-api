@@ -267,6 +267,18 @@ export class AuthService {
     });
   }
 
+  /**
+   * Origin Supabase must send the user back to after consent.
+   *
+   * This is the origin that is PUBLICLY REACHABLE for /api/v1/auth/callback,
+   * which is not necessarily where this process runs. When the frontend
+   * proxies /api/v1/* to this API (Next rewrite), it must be the FRONTEND
+   * origin: the callback then arrives through the proxy and Set-Cookie is
+   * emitted from the frontend's own origin, keeping the session cookie
+   * first-party. Pointing this back at the API's own host silently breaks
+   * OAuth — the PKCE verifier cookie was stored on the frontend origin, so
+   * the callback cannot read it and bails out to /login?error=oauth.
+   */
   private apiPublicUrl(): string {
     const url = process.env.API_PUBLIC_URL;
     if (url) return url;

@@ -13,6 +13,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { WorkspaceProjectsModule } from './modules/workspace-projects/workspace-projects.module';
 import { WorkspaceTasksModule } from './modules/workspace-tasks/workspace-tasks.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
@@ -54,6 +55,15 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // Authentication is deny-by-default: a new controller is protected the
+    // moment it exists, instead of relying on someone remembering
+    // @UseGuards(JwtAuthGuard). Opt out per route with @Public().
+    // Registered after ThrottlerGuard so rate limiting still shields the
+    // public auth endpoints before any JWT work happens.
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_INTERCEPTOR,
