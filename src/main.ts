@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType, LogLevel } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -60,10 +61,16 @@ async function bootstrap() {
     }
   }
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: logLevels,
     bufferLogs: true,
   });
+
+  // Railway (like most PaaS) terminates TLS at a reverse proxy, so every
+  // request reaches Express from the proxy's address. Without this, req.ip is
+  // that single address for every visitor and ThrottlerGuard buckets the whole
+  // world together — one user's traffic rate-limits everyone else.
+  app.set('trust proxy', 1);
 
   // Use our custom logger for all NestJS internal logging
   app.useLogger(appLogger);
